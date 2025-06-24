@@ -4,6 +4,10 @@ on:
     branches:
       - develop
 
+  pull_request:
+    branches:
+      - develop
+
 
 jobs:
   build:
@@ -23,7 +27,7 @@ jobs:
 
 
       - name: Build with Maven
-        run: mvn clean install
+        run: mvn clean install -Dspring.profiles.active=ci
 
 
       - name: Upload artifact for deployment job
