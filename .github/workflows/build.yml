@@ -26,8 +26,8 @@ jobs:
           distribution: 'temurin'
 
 
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Build without running tests
+        run: mvn clean install -DskipTests # Option -DskipTests: Run without db in git workflow cicd, can use h2 to mock data latter
 
 
       - name: Upload artifact for deployment job
