@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: splitly-postgres
+    environment:
+      POSTGRES_DB: splitly_db
+      POSTGRES_USER: splitly
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - splitly-network
+
+volumes:
+  postgres_data:
+
+networks:
+  splitly-network:
