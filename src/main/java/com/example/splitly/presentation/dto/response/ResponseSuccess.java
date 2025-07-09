@@ -1,4 +1,4 @@
-package com.example.splitly.dto.response;
+package com.example.splitly.presentation.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

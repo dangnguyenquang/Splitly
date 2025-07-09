@@ -27,7 +27,7 @@ jobs:
 
 
       - name: Build without running tests
-        run: mvn clean install -DskipTests # Option -DskipTests: Run without db in git workflow cicd, can use h2 to mock data latter
+        run: mvn clean install -DskipTests # Option -DskipTests: Run without db in git workflow ci/cd, can use h2 to mock data latter
 
       - name: Cache Maven packages
         uses: actions/cache@v3

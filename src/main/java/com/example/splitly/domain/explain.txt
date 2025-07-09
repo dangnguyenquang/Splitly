@@ -1,0 +1,1 @@
+Contains domain logic of app such as: entity, repository interface, constants, enumerators, exception, value objects

@@ -1,7 +1,7 @@
-package com.example.splitly.service.service_implementation;
+package com.example.splitly.infrastructure.service;
 
-import com.example.splitly.entity.User;
-import com.example.splitly.repository.UserRepository;
+import com.example.splitly.domain.entity.User;
+import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userResponsitory.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userResponsitory.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return new CustomUserDetails(user);
     }
 }

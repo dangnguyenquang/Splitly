@@ -44,3 +44,43 @@ INSERT INTO fund_pay (fund_pay_id, status, user_id, amount, fund_pay_note, creat
 INSERT INTO fund (fund_id, new_value, old_value, fund_change_type_id, payment_id, fund_pay_id, group_id, fund_note, changed_at) VALUES
 (1, 1000.0, 900.0, 1, NULL, 1, 1, 'Added fund', '2025-06-30 04:41:44'),
 (2, 900.0, 1000.0, 2, 1, NULL, 1, 'Used fund for dinner', '2025-06-30 04:41:44');
+
+-- consensus_payment
+INSERT INTO consensus_payment (user_id, payment_id, updated_at, created_at, isDeleted) VALUES
+(1, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+(2, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+(3, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', TRUE);
+
+-- user_debt
+INSERT INTO user_debt (user_debt_id, debtor_id, creditor_id, amount, user_debt_note, created_at, status) VALUES
+(1, 2, 1, 150.0, 'Owes for dinner', '2025-06-30 04:41:44', TRUE),
+(2, 3, 1, 160.0, 'Owes for dinner', '2025-06-30 04:41:44', FALSE);
+
+-- roles
+INSERT INTO roles (role_id, role_name) VALUES
+(1, 'ADMIN'),
+(2, 'MEMBER');
+
+-- permission
+INSERT INTO permission (permission_id, permission_name) VALUES
+(1, 'READ'),
+(2, 'WRITE');
+
+
+-- user_role
+INSERT INTO user_role (role_id, user_id) VALUES
+(1, 1),  
+(2, 2),  
+(2, 3);  
+
+
+-- role_permission
+INSERT INTO role_permission (permission_id, role_id) VALUES
+(1, 1),  
+(2, 1),  
+(1, 2);  
+
+-- parameter
+INSERT INTO parameter (parameter_id, number_of_consensus_payment, number_of_consensus_punish, group_id) VALUES
+(1, 2, 1, 1);
+

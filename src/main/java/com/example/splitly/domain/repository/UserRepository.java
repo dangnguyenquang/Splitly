@@ -1,7 +1,8 @@
-package com.example.splitly.repository;
+package com.example.splitly.domain.repository;
 
-import com.example.splitly.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.splitly.domain.entity.User;
 
 import java.util.Optional;
 

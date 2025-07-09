@@ -1,4 +1,4 @@
-package com.example.splitly.dto.response;
+package com.example.splitly.presentation.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
@@ -14,6 +14,7 @@ public class ResponseData<T> implements Serializable {
 
     /**
      * Response data for the API to retrieve data successfully. For GET, POST only
+     * 
      * @param status
      * @param message
      * @param data
@@ -25,7 +26,9 @@ public class ResponseData<T> implements Serializable {
     }
 
     /**
-     * Response data when the API executes successfully or getting error. For PUT, PATCH, DELETE
+     * Response data when the API executes successfully or getting error. For PUT,
+     * PATCH, DELETE
+     * 
      * @param status
      * @param message
      */

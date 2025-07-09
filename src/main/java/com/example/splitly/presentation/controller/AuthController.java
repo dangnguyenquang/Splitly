@@ -1,8 +1,8 @@
-package com.example.splitly.controller;
+package com.example.splitly.presentation.controller;
 
-import com.example.splitly.dto.request.AuthDTO;
-import com.example.splitly.dto.response.ResponseData;
-import com.example.splitly.service.service_implementation.CustomUserDetailsService;
+import com.example.splitly.infrastructure.service.CustomUserDetailsService;
+import com.example.splitly.presentation.dto.request.AuthDTO;
+import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,7 +52,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        final String jwt = jwtUtil.generateTokenFromPrincipal(userDetails.getUsername(), userDetails.getAuthorities()); // getUserName <=> getEmail
+        final String jwt = jwtUtil.generateTokenFromPrincipal(userDetails.getUsername(), userDetails.getAuthorities()); // getUserName
+                                                                                                                        // <=>
+                                                                                                                        // getEmail
         Map<String, String> data = new HashMap<>();
         data.put("token", jwt);
 
