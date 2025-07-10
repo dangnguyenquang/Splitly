@@ -1,4 +1,4 @@
-package com.example.splitly.infrastructure.service;
+package com.example.splitly.application.service;
 
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.UserRepository;

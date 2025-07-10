@@ -1,7 +1,7 @@
 package com.example.splitly.config;
 
-import com.example.splitly.infrastructure.service.CustomOAuth2UserService;
-import com.example.splitly.infrastructure.service.CustomUserDetailsService;
+import com.example.splitly.application.service.CustomOAuth2UserService;
+import com.example.splitly.application.service.CustomUserDetailsService;
 import com.example.splitly.security.JwtAuthFilter;
 import com.example.splitly.security.OAuth2LoginSuccessHandler;
 

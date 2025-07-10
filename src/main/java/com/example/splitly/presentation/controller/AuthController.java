@@ -1,6 +1,6 @@
 package com.example.splitly.presentation.controller;
 
-import com.example.splitly.infrastructure.service.CustomUserDetailsService;
+import com.example.splitly.application.service.CustomUserDetailsService;
 import com.example.splitly.presentation.dto.request.AuthDTO;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.security.JwtUtil;

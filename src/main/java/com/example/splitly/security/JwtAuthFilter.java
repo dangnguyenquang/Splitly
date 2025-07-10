@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.splitly.infrastructure.service.CustomUserDetailsService;
+import com.example.splitly.application.service.CustomUserDetailsService;
 
 import java.io.IOException;
 
