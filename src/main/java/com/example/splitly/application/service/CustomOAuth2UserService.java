@@ -1,7 +1,7 @@
-package com.example.splitly.service.service_implementation;
+package com.example.splitly.application.service;
 
-import com.example.splitly.entity.User;
-import com.example.splitly.repository.UserRepository;
+import com.example.splitly.domain.entity.User;
+import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.security.CustomOAuth2User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -29,7 +29,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     User newUser = new User();
                     newUser.setEmail(email);
                     newUser.setFullName(username);
-//                    newUser.setRole("USER");
+                    // newUser.setRole("USER");
                     return userRepository.save(newUser);
                 });
 

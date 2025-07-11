@@ -1,6 +1,7 @@
-package com.example.splitly.entity;
+package com.example.splitly.domain.entity;
 
-import com.example.splitly.util.Gender;
+import com.example.splitly.domain.enumerator.Gender;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

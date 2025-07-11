@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS app_user (
   password VARCHAR(50),
 );
 
--- Table: group
+-- Table: group_info
 CREATE TABLE IF NOT EXISTS group_info (
   group_id INT PRIMARY KEY,
   number_of_member INT,

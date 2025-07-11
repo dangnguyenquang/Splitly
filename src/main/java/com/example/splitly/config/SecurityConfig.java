@@ -1,9 +1,10 @@
 package com.example.splitly.config;
 
+import com.example.splitly.application.service.CustomOAuth2UserService;
+import com.example.splitly.application.service.CustomUserDetailsService;
 import com.example.splitly.security.JwtAuthFilter;
 import com.example.splitly.security.OAuth2LoginSuccessHandler;
-import com.example.splitly.service.service_implementation.CustomOAuth2UserService;
-import com.example.splitly.service.service_implementation.CustomUserDetailsService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,8 +62,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider(
-            UserDetailsService userDetailsService
-    ) {
+            UserDetailsService userDetailsService) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
 

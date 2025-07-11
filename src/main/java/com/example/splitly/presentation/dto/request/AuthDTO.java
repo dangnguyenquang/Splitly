@@ -1,4 +1,4 @@
-package com.example.splitly.dto.request;
+package com.example.splitly.presentation.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

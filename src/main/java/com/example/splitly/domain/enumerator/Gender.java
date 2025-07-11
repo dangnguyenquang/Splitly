@@ -1,4 +1,4 @@
-package com.example.splitly.util;
+package com.example.splitly.domain.enumerator;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

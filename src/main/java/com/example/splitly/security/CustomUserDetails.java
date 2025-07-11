@@ -1,8 +1,9 @@
 package com.example.splitly.security;
 
-import com.example.splitly.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.example.splitly.domain.entity.User;
 
 import java.util.Collection;
 import java.util.Collections;
