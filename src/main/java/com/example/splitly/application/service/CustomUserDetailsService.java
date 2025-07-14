@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private UserRepository userResponsitory;
+    private UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userResponsitory) {
-        this.userResponsitory = userResponsitory;
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public CustomUserDetailsService() {
@@ -24,8 +24,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userResponsitory.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         return new CustomUserDetails(user);
     }
 }
