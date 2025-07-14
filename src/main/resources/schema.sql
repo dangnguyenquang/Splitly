@@ -1,7 +1,7 @@
 -- ENUM types
-CREATE TYPE IF NOT EXISTS payment_status AS ENUM ('WAITING', 'FAILED', 'PENDING', 'SUCCESS');
-CREATE TYPE IF NOT EXISTS gender_type AS ENUM ('MALE', 'FEMALE');
-CREATE TYPE IF NOT EXISTS fund_pay_status AS ENUM ('PENDING', 'SUCCESS');
+--CREATE TYPE IF NOT EXISTS payment_status AS ENUM ('WAITING', 'FAILED', 'PENDING', 'SUCCESS');
+--CREATE TYPE IF NOT EXISTS gender_type AS ENUM ('MALE', 'FEMALE');
+--CREATE TYPE IF NOT EXISTS fund_pay_status AS ENUM ('PENDING', 'SUCCESS');
 
 -- Table: user
 CREATE TABLE IF NOT EXISTS app_user (
@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS app_user (
   username VARCHAR(50),
   phone VARCHAR(10),
   email VARCHAR(50),
-  gender gender_type,
+--  gender gender_type,
+  gender TEXT,
   password VARCHAR(50),
 );
 
@@ -47,7 +48,8 @@ CREATE TABLE IF NOT EXISTS payment_request (
   title VARCHAR(50),
   tag_id INT,
   estimated_amount DOUBLE PRECISION,
-  status payment_status,
+--  status payment_status,
+  status TEXT,
   image_url TEXT,
   payment_request_note TEXT,
   amount DOUBLE PRECISION,
@@ -69,7 +71,8 @@ CREATE TABLE IF NOT EXISTS items (
 -- Table: fund_pay
 CREATE TABLE IF NOT EXISTS fund_pay (
   fund_pay_id INT PRIMARY KEY,
-  status fund_pay_status,
+--  status fund_pay_status,
+  status TEXT,
   user_id INT,
   amount DOUBLE PRECISION,
   fund_pay_note TEXT,

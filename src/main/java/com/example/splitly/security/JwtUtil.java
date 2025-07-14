@@ -3,6 +3,7 @@ package com.example.splitly.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,10 +15,7 @@ import com.example.splitly.domain.entity.User;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -30,8 +28,8 @@ public class JwtUtil {
     }
 
     private Key getSigningKey() {
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-        return new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
+        byte[] keyBytes = Base64.getDecoder().decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String extractUsername(String token) {
@@ -64,11 +62,27 @@ public class JwtUtil {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token)); // getUsername <=> getEmail
     }
 
+    public List<String> extractScopes(String token) {
+        Claims claims = extractAllClaims(token);
+        Object raw = claims.get("scope");
+
+        if (raw instanceof List<?>) {
+            return ((List<?>) raw).stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
     public String generateTokenFromPrincipal(String subject, Collection<? extends GrantedAuthority> authorities) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", authorities.stream()
+
+        List<String> scope = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+
+        claims.put("scope", scope);
 
         return Jwts.builder()
                 .setClaims(claims)
