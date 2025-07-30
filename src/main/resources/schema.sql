@@ -1,15 +1,10 @@
--- ENUM types
-CREATE TYPE payment_status AS ENUM ('WAITING', 'FAILED', 'PROCESSING', 'SUCCESS');
-CREATE TYPE gender_type AS ENUM ('MALE', 'FEMALE');
-CREATE TYPE fund_pay_status AS ENUM ('PENDING', 'SUCCESS');
-
 -- Table: user
 CREATE TABLE app_user (
   user_id SERIAL PRIMARY KEY,
   username VARCHAR(50),
   phone VARCHAR(10),
   email VARCHAR(50),
-  gender gender_type,
+  gender TEXT,
   password VARCHAR(255)
 );
 
@@ -45,7 +40,7 @@ CREATE TABLE payment_request (
   title VARCHAR(50),
   tag_id INT,
   estimated_amount DOUBLE PRECISION,
-  status payment_status,
+  status TEXT,
   image_url TEXT,
   payment_request_note TEXT,
   amount DOUBLE PRECISION,
@@ -68,7 +63,7 @@ CREATE TABLE items (
 -- Table: fund_pay
 CREATE TABLE fund_pay (
   fund_pay_id SERIAL PRIMARY KEY,
-  status fund_pay_status,
+  status TEXT,
   user_id INT,
   amount DOUBLE PRECISION,
   fund_pay_note TEXT,
@@ -105,7 +100,7 @@ CREATE TABLE consensus_payment (
   payment_id INT,
   updated_at TIMESTAMP,
   created_at TIMESTAMP,
-  is_deleted BOOLEAN,
+  is_accepted BOOLEAN,
   PRIMARY KEY (user_id, payment_id),
   FOREIGN KEY (user_id) REFERENCES app_user(user_id),
   FOREIGN KEY (payment_id) REFERENCES payment_request(payment_id)

@@ -59,7 +59,7 @@ public class User {
     }
 
     @OneToMany(mappedBy = "user")
-    private Set<PaymentRequest> paymentRequestList;
+    private Set<Payment> paymentList;
 
     @OneToMany(mappedBy = "user")
     private Set<ConsensusPayment> consensusPayments = new HashSet<>();
