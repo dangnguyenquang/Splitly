@@ -1,27 +1,22 @@
--- ENUM types
-CREATE TYPE IF NOT EXISTS payment_status AS ENUM ('WAITING', 'FAILED', 'PENDING', 'SUCCESS');
-CREATE TYPE IF NOT EXISTS gender_type AS ENUM ('MALE', 'FEMALE');
-CREATE TYPE IF NOT EXISTS fund_pay_status AS ENUM ('PENDING', 'SUCCESS');
-
 -- Table: user
-CREATE TABLE IF NOT EXISTS app_user (
-  user_id INT PRIMARY KEY,
+CREATE TABLE app_user (
+  user_id SERIAL PRIMARY KEY,
   username VARCHAR(50),
   phone VARCHAR(10),
   email VARCHAR(50),
-  gender gender_type,
-  password VARCHAR(50),
+  gender TEXT,
+  password VARCHAR(255)
 );
 
--- Table: group
-CREATE TABLE IF NOT EXISTS group_info (
-  group_id INT PRIMARY KEY,
+-- Table: group_info
+CREATE TABLE group_info (
+  group_id SERIAL PRIMARY KEY,
   number_of_member INT,
   group_name VARCHAR(50)
 );
 
 -- Table: group_user
-CREATE TABLE IF NOT EXISTS group_user (
+CREATE TABLE group_user (
   group_id INT,
   user_id INT,
   status BOOLEAN,
@@ -32,44 +27,43 @@ CREATE TABLE IF NOT EXISTS group_user (
 );
 
 -- Table: tag
-CREATE TABLE IF NOT EXISTS tag (
-  tag_id INT PRIMARY KEY,
+CREATE TABLE tag (
+  tag_id SERIAL PRIMARY KEY,
   tag_name VARCHAR(50),
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP,
-  isDeleted BOOLEAN
+  is_deleted BOOLEAN
 );
 
 -- Table: payment_request
-CREATE TABLE IF NOT EXISTS payment_request (
-  payment_id INT PRIMARY KEY,
+CREATE TABLE payment_request (
+  payment_id SERIAL PRIMARY KEY,
   user_id INT,
   title VARCHAR(50),
   tag_id INT,
   estimated_amount DOUBLE PRECISION,
-  status payment_status,
+  status TEXT,
   image_url TEXT,
   payment_request_note TEXT,
   amount DOUBLE PRECISION,
-  pay_list_id INT,
   used_fund_amount DOUBLE PRECISION,
   FOREIGN KEY (user_id) REFERENCES app_user(user_id),
   FOREIGN KEY (tag_id) REFERENCES tag(tag_id)
 );
 
 -- Table: items
-CREATE TABLE IF NOT EXISTS items (
-  item_id INT PRIMARY KEY,
+CREATE TABLE items (
+  item_id SERIAL PRIMARY KEY,
   payment_id INT,
   item_name VARCHAR(50),
   amount DOUBLE PRECISION,
+  quantity INT,
+  price_quotation DOUBLE PRECISION,
   FOREIGN KEY (payment_id) REFERENCES payment_request(payment_id)
 );
 
 -- Table: fund_pay
-CREATE TABLE IF NOT EXISTS fund_pay (
-  fund_pay_id INT PRIMARY KEY,
-  status fund_pay_status,
+CREATE TABLE fund_pay (
+  fund_pay_id SERIAL PRIMARY KEY,
+  status TEXT,
   user_id INT,
   amount DOUBLE PRECISION,
   fund_pay_note TEXT,
@@ -78,14 +72,14 @@ CREATE TABLE IF NOT EXISTS fund_pay (
 );
 
 -- Table: fund_change_type
-CREATE TABLE IF NOT EXISTS fund_change_type (
-  fund_change_type_id INT PRIMARY KEY,
+CREATE TABLE fund_change_type (
+  fund_change_type_id SERIAL PRIMARY KEY,
   fund_change_type_name VARCHAR(50)
 );
 
 -- Table: fund
-CREATE TABLE IF NOT EXISTS fund (
-  fund_id INT PRIMARY KEY,
+CREATE TABLE fund (
+  fund_id SERIAL PRIMARY KEY,
   new_value DOUBLE PRECISION,
   old_value DOUBLE PRECISION,
   fund_change_type_id INT,
@@ -101,20 +95,20 @@ CREATE TABLE IF NOT EXISTS fund (
 );
 
 -- Table: consensus_payment
-CREATE TABLE IF NOT EXISTS consensus_payment (
+CREATE TABLE consensus_payment (
   user_id INT,
   payment_id INT,
   updated_at TIMESTAMP,
   created_at TIMESTAMP,
-  isDeleted BOOLEAN,
+  is_accepted BOOLEAN,
   PRIMARY KEY (user_id, payment_id),
   FOREIGN KEY (user_id) REFERENCES app_user(user_id),
   FOREIGN KEY (payment_id) REFERENCES payment_request(payment_id)
 );
 
 -- Table: user_debt
-CREATE TABLE IF NOT EXISTS user_debt (
-  user_debt_id INT PRIMARY KEY,
+CREATE TABLE user_debt (
+  user_debt_id SERIAL PRIMARY KEY,
   debtor_id INT,
   creditor_id INT,
   amount DOUBLE PRECISION,
@@ -126,19 +120,19 @@ CREATE TABLE IF NOT EXISTS user_debt (
 );
 
 -- Table: roles
-CREATE TABLE IF NOT EXISTS roles (
-  role_id INT PRIMARY KEY,
+CREATE TABLE roles (
+  role_id SERIAL PRIMARY KEY,
   role_name VARCHAR(10)
 );
 
 -- Table: permission
-CREATE TABLE IF NOT EXISTS permission (
-  permission_id INT PRIMARY KEY,
+CREATE TABLE permission (
+  permission_id SERIAL PRIMARY KEY,
   permission_name VARCHAR(10)
 );
 
 -- Table: user_role
-CREATE TABLE IF NOT EXISTS user_role (
+CREATE TABLE user_role (
   role_id INT,
   user_id INT,
   PRIMARY KEY (role_id, user_id),
@@ -147,7 +141,7 @@ CREATE TABLE IF NOT EXISTS user_role (
 );
 
 -- Table: role_permission
-CREATE TABLE IF NOT EXISTS role_permission (
+CREATE TABLE role_permission (
   permission_id INT,
   role_id INT,
   PRIMARY KEY (permission_id, role_id),
@@ -156,8 +150,8 @@ CREATE TABLE IF NOT EXISTS role_permission (
 );
 
 -- Table: parameter
-CREATE TABLE IF NOT EXISTS parameter (
-  parameter_id INT,
+CREATE TABLE parameter (
+  parameter_id SERIAL,
   number_of_consensus_payment INT,
   number_of_consensus_punish INT,
   group_id INT,

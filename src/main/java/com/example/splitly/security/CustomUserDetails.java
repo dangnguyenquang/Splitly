@@ -1,12 +1,14 @@
 package com.example.splitly.security;
 
-import com.example.splitly.entity.User;
+import com.example.splitly.domain.entity.Permission;
+import com.example.splitly.domain.entity.Role;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import com.example.splitly.domain.entity.User;
+
+import java.util.*;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -18,7 +20,17 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        Set<GrantedAuthority> authorities = new HashSet<>();
+
+        for (Role role : user.getRoles()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
+
+            for (Permission permission : role.getPermissions()) {
+                authorities.add(new SimpleGrantedAuthority(permission.getPermissionName()));
+            }
+        }
+
+        return authorities;
     }
 
     @Override
@@ -30,6 +42,8 @@ public class CustomUserDetails implements UserDetails {
     public String getUsername() {
         return user.getEmail();
     }
+
+    public int getUserId() { return user.getUserId(); }
 
     @Override
     public boolean isAccountNonExpired() {

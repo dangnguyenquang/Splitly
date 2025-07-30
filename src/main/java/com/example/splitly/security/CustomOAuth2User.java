@@ -1,9 +1,10 @@
 package com.example.splitly.security;
 
-import com.example.splitly.entity.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+
+import com.example.splitly.domain.entity.User;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -27,7 +28,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+        // return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
         return Collections.emptyList();
     }
 

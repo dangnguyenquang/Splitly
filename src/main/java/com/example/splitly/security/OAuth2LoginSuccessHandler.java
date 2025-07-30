@@ -1,6 +1,6 @@
 package com.example.splitly.security;
 
-import com.example.splitly.dto.response.ResponseData;
+import com.example.splitly.presentation.dto.response.ResponseData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,14 +26,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication)
+            HttpServletResponse response,
+            Authentication authentication)
             throws IOException, ServletException {
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-        String token = jwtUtil.generateTokenFromPrincipal(oAuth2User.getName(), List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        String token = jwtUtil.generateTokenFromPrincipal(oAuth2User.getName(),
+                List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
-        ResponseData<Map<String, String>> responseData =
-                new ResponseData<>(200, "Login successfully", Map.of("token", token));
+        ResponseData<Map<String, String>> responseData = new ResponseData<>(200, "Login successfully",
+                Map.of("token", token));
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
