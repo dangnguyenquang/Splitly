@@ -8,18 +8,17 @@ import org.springframework.stereotype.Service;
 
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.GroupDTO;
+import com.example.splitly.application.serviceInterface.IGroupInfo;
 import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.GroupInfoRepository;
-import com.example.splitly.service.InterfaceGroupInfo;
-
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class GroupInfoImpl implements InterfaceGroupInfo {
+public class GroupInfoImpl implements IGroupInfo {
 
     private final GroupInfoRepository groupInfoRepository;
     private final UserRepository userRepository;

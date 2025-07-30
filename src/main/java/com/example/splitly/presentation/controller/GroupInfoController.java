@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.splitly.application.serviceInterface.IGroupInfo;
 import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.presentation.dto.request.GroupDTO;
 import com.example.splitly.presentation.dto.response.ResponseData;
-import com.example.splitly.service.InterfaceGroupInfo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/group")
 public class GroupInfoController {
-    private final InterfaceGroupInfo interfaceGroupInfo;
+    private final IGroupInfo interfaceGroupInfo;
 
     @GetMapping("/get-all")
     public ResponseEntity<ResponseData<?>> getAllGroups() {

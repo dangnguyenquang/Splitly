@@ -1,8 +1,8 @@
-package com.example.splitly.service;
+package com.example.splitly.application.serviceInterface;
 
 import java.util.List;
 
-import com.example.splitly.entity.User;
+import com.example.splitly.domain.entity.User;
 
 public interface IGroupUser {
     void inviteUserToGroup(Integer userId, Long groupId);

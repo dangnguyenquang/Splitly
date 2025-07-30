@@ -1,11 +1,13 @@
-package com.example.splitly.service;
+package com.example.splitly.application.serviceInterface;
 
 import java.util.List;
 
-import com.example.splitly.dto.request.GroupDTO;
-import com.example.splitly.entity.GroupInfo;
+import com.example.splitly.domain.entity.GroupInfo;
+import com.example.splitly.presentation.dto.request.GroupDTO;
 
-public interface InterfaceGroupInfo {
+
+
+public interface IGroupInfo {
     List<GroupInfo> getAllGroup();
     GroupInfo createGroup(GroupDTO groupDTO);
     GroupInfo updateGroup (Long groupId, GroupDTO groupDTO);

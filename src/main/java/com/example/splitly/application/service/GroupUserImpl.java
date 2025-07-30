@@ -6,12 +6,12 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.example.splitly.application.serviceInterface.IGroupUser;
 import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.domain.entity.GroupUser;
 import com.example.splitly.domain.entity.GroupUserId;
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.GroupUserRepository;
-import com.example.splitly.service.IGroupUser;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
