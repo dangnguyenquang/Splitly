@@ -10,6 +10,8 @@ import java.util.Set;
 @Getter
 @Setter
 public class TagRequest implements Serializable {
+    private int tagId;
+
     @NotBlank(message = "Role name can't be blank")
     private String tagName;
 

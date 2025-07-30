@@ -4,12 +4,16 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
 
 @Getter
 @Setter
+@ToString
 public class ItemRequest implements Serializable {
+    private int paymentId;
+
     @NotBlank(message = "Item name can't be blank")
     private String itemName;
 

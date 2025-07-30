@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -16,19 +18,19 @@ public class ConsensusPayment {
     @EmbeddedId
     private ConsensusPaymentId consensusPaymentId;
 
-    @Column(name = "update_at")
-    private int updateAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-    @Column(name = "create_at")
-    private String createAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    @Column(name = "is_deleted")
-    private String isDeleted;
+    @Column(name = "is_accepted")
+    private boolean isAccepted;
 
     @ManyToOne
     @MapsId("paymentId")
     @JoinColumn(name = "payment_id")
-    private PaymentRequest paymentRequest;
+    private Payment payment;
 
     @ManyToOne
     @MapsId("userId")

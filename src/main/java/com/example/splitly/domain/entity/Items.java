@@ -1,16 +1,14 @@
 package com.example.splitly.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Table(name = "items")
 public class Items {
     @Id
@@ -32,5 +30,5 @@ public class Items {
 
     @ManyToOne
     @JoinColumn(name = "payment_id")
-    private PaymentRequest paymentRequest;
+    private Payment payment;
 }

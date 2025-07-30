@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -17,7 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "payment_request")
-public class PaymentRequest {
+public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
@@ -32,12 +31,12 @@ public class PaymentRequest {
 
     @ManyToOne
     @JoinColumn(name = "tag_id")
-    private Tag tags;
+    private Tag tag;
 
-    @OneToMany(mappedBy = "paymentRequest")
+    @OneToMany(mappedBy = "payment")
     private Set<Items> items;
 
-    @OneToMany(mappedBy = "paymentRequest")
+    @OneToMany(mappedBy = "payment")
     private Set<ConsensusPayment> consensusPayments = new HashSet<>();
 
     @Column(name = "estimated_amount")

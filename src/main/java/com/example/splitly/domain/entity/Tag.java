@@ -26,6 +26,6 @@ public class Tag {
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
-    @OneToMany(mappedBy = "tags")
-    private Set<PaymentRequest> paymentRequests;
+    @OneToMany(mappedBy = "tag")
+    private Set<Payment> payments;
 }
