@@ -11,6 +11,12 @@ import java.time.LocalDateTime;
 public class ConsensusPaymentResponse implements Serializable {
     private int userId;
 
+    private String email;
+
+    private String fullName;
+
+    private String phone;
+
     private int paymentId;
 
     private LocalDateTime updateAt;

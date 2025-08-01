@@ -12,6 +12,8 @@ import java.io.Serializable;
 @Setter
 @ToString
 public class ItemRequest implements Serializable {
+    private Integer itemId;
+
     private int paymentId;
 
     @NotBlank(message = "Item name can't be blank")

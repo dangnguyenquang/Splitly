@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ItemResponse {
-    private int itemId;
+    private Integer itemId;
 
     private String itemName;
 

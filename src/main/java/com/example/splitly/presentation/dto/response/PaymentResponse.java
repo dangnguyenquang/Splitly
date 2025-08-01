@@ -24,7 +24,7 @@ public class PaymentResponse implements Serializable {
 
     private Set<ItemResponse> items;
 
-    private Set<ConsensusPaymentRequest> consensusPayments;
+    private Set<ConsensusPaymentResponse> consensusPayments;
 
     private double estimatedAmount;
 

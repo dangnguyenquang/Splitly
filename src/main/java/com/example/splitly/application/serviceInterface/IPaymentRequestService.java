@@ -15,9 +15,9 @@ public interface IPaymentRequestService {
 
     public Set<PaymentResponse> getAllPaymentRequest();
 
-    public PaymentRequest updatePaymentRequest(PaymentRequest paymentRequest);
+    public PaymentResponse updatePaymentRequest(PaymentRequest paymentRequest, Integer paymentId);
 
     public void changeStatusPaymentRequestToFailed(Integer paymentId);
 
-    public PaymentRequest changeStatusPaymentRequestToSuccess(PaymentRequest paymentRequest);
+    public PaymentResponse changeStatusPaymentRequestToSuccess(PaymentRequest paymentRequest, Integer paymentId);
 }

@@ -36,4 +36,10 @@ public class PaymentController {
         return new ResponseData<>(HttpStatus.OK.value(), "Get all payments successfully", response);
     }
 
+    @PutMapping("/{id}")
+    public ResponseData<?> updatePaymentRequest(@RequestBody PaymentRequest paymentRequest, @PathVariable Integer id) {
+        var response = paymentRequestService.updatePaymentRequest(paymentRequest, id);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Update payment successfully", response);
+    }
 }
