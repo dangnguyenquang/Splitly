@@ -4,6 +4,7 @@ import com.example.splitly.domain.entity.Payment;
 import com.example.splitly.presentation.dto.request.ConsensusPaymentRequest;
 import com.example.splitly.presentation.dto.response.ConsensusPaymentResponse;
 
+import java.util.List;
 import java.util.Set;
 
 public interface IConsensusService {
@@ -14,4 +15,6 @@ public interface IConsensusService {
     public Set<ConsensusPaymentResponse> getByPaymentId(Integer paymentId);
 
     public Set<ConsensusPaymentResponse> createAll(Set<ConsensusPaymentRequest> consensusPaymentRequests, Payment payment);
+
+    public Set<ConsensusPaymentResponse> updateConsensusPaymentById(Payment payment, Set<ConsensusPaymentRequest> consensusPaymentRequests);
 }

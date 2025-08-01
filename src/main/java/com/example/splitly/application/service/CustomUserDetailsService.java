@@ -3,6 +3,7 @@ package com.example.splitly.application.service;
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.security.CustomUserDetails;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,5 +29,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return new CustomUserDetails(user);
+    }
+
+    public User findUserById(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
     }
 }

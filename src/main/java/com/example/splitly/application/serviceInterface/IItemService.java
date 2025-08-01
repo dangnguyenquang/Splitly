@@ -12,7 +12,9 @@ public interface IItemService  {
 
     public Set<ItemResponse> createAll(Set<ItemRequest> itemRequests, Payment payment);
 
-    public List<ItemResponse> getItemListByPaymentId(Integer paymentId);
+    public Set<ItemResponse> getItemListByPaymentId(Integer paymentId);
 
     public ItemResponse update(Integer id, ItemRequest itemRequest);
+
+    public Set<ItemResponse> updateItemsByPaymentId(Payment payment, Set<ItemRequest> itemRequests);
 }
