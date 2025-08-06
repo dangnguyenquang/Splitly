@@ -46,10 +46,10 @@ INSERT INTO fund (fund_id, new_value, old_value, fund_change_type_id, payment_id
 (2, 900.0, 1000.0, 2, 1, NULL, 1, 'Used fund for dinner', '2025-06-30 04:41:44');
 
 -- consensus_payment
-INSERT INTO consensus_payment (user_id, payment_id, updated_at, created_at, is_accepted) VALUES
-(1, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
-(2, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
-(3, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', TRUE);
+INSERT INTO consensus_payment (user_id, payment_id, updated_at, created_at, is_process_accepted, is_success_accepted) VALUES
+(1, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE, FALSE),
+(2, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE, FALSE),
+(3, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', TRUE, FALSE);
 
 -- user_debt
 INSERT INTO user_debt (user_debt_id, debtor_id, creditor_id, amount, user_debt_note, created_at, status) VALUES

@@ -1,5 +1,6 @@
 package com.example.splitly.application.serviceInterface;
 
+import com.example.splitly.domain.entity.ConsensusPayment;
 import com.example.splitly.domain.entity.Payment;
 import com.example.splitly.presentation.dto.request.ConsensusPaymentRequest;
 import com.example.splitly.presentation.dto.response.ConsensusPaymentResponse;

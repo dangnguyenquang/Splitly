@@ -164,7 +164,6 @@ public class ConsensusService implements IConsensusService {
         return saved.stream().map(consensusMapper::toConsensusPaymentResponse).collect(Collectors.toSet());
     }
 
-
     @Override
     public ConsensusPaymentResponse update(Integer consensusPaymentId, ConsensusPaymentRequest consensusPaymentRequest) {
         return null;

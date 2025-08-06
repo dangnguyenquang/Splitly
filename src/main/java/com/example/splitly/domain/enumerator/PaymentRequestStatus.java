@@ -9,6 +9,10 @@ public enum PaymentRequestStatus {
     FAILED,
     @JsonProperty("processing")
     PROCESSING,
-    @JsonProperty("success")
-    SUCCESS,
+    @JsonProperty("completed")
+    COMPLETED,
+    @JsonProperty("awaiting_confirmation")
+    AWAITING_CONFIRMATION,
+    @JsonProperty("ready_to_split")
+    READY_TO_SPLIT,
 }

@@ -23,5 +23,7 @@ public class ConsensusPaymentResponse implements Serializable {
 
     private LocalDateTime createAt;
 
-    private boolean isAccepted;
+    private boolean isProcessAccepted;
+
+    private boolean isSuccessAccepted;
 }
