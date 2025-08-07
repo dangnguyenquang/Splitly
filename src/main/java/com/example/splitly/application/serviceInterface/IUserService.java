@@ -1,6 +1,5 @@
 package com.example.splitly.application.serviceInterface;
 
-import com.example.splitly.presentation.dto.request.PermissionRequest;
 import com.example.splitly.presentation.dto.request.UserRequest;
 import com.example.splitly.presentation.dto.response.UserResponse;
 
@@ -14,4 +13,8 @@ public interface IUserService {
     public UserResponse updateUser(Integer userId, UserRequest request);
 
     public UserResponse getMyInfo();
+
+    void handleInvitation(Long groupId, Integer userId, boolean action);
+
+    boolean checkEmail(String email);
 }

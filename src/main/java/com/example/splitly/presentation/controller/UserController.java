@@ -34,6 +34,11 @@ public class UserController {
         return new ResponseData<>(HttpStatus.OK.value(), "Get user successfully", user);
     }
 
+    @GetMapping("/check-email")
+    public ResponseData<?> checkExistsedEmail(@RequestBody String email) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Check email successfully", userService.checkEmail(email));
+    }
+
     @GetMapping("/my-info")
     public ResponseData<?> getMyInfo() {
         UserResponse response = userService.getMyInfo();
@@ -47,5 +52,12 @@ public class UserController {
             @Valid @RequestBody UserRequest request) {
         UserResponse updatedUser = userService.updateUser(userId, request);
         return new ResponseData<>(HttpStatus.OK.value(), "User updated", updatedUser);
+    }
+
+    @PatchMapping("/invitation/{userId}")
+    public ResponseData<?> invitationUserAccept(@PathVariable Integer userId, @RequestParam Long groupId,
+            @RequestParam boolean action) {
+        userService.handleInvitation(groupId, userId, action);
+        return new ResponseData<>(HttpStatus.OK.value(), "Handle Successfully");
     }
 }

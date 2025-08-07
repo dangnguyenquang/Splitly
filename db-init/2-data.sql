@@ -5,24 +5,24 @@ INSERT INTO app_user ( username, phone, email, gender, password) VALUES
 ('carol', '0900000003', 'carol@example.com', 'FEMALE', '$2a$10$3EqxkuW2M0wVNBdsHMfU0OKAo0Oh9zSnjPPZYzkvGer8Rq/1StcXa');
 
 -- group_info
-INSERT INTO group_info ( number_of_member, group_name) VALUES
-( 3, 'Group A');
+INSERT INTO group_info ( number_of_member, group_name, leader_id) VALUES
+( 3, 'Group A', 2);
 
 -- group_user
 INSERT INTO group_user (group_id, user_id, status, joined_at) VALUES
-(1, 1, TRUE, '2025-06-30 04:41:44'),
-(1, 2, TRUE, '2025-06-30 04:41:44'),
-(1, 3, FALSE, '2025-06-30 04:41:44');
+(1, 1, 'SUCCESS', '2025-06-30 04:41:44'),
+(1, 2, 'SUCCESS', '2025-06-30 04:41:44'),
+(1, 3, 'FAILED', '2025-06-30 04:41:44');
 
 -- tag
-INSERT INTO tag ( tag_name, created_at, updated_at, isDeleted) VALUES
+INSERT INTO tag ( tag_name, created_at, updated_at, is_deleted) VALUES
 ( 'Food', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
 ( 'Travel', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE);
 
 -- payment_request
 INSERT INTO payment_request (user_id, title, tag_id, estimated_amount, status, image_url, payment_request_note, amount, pay_list_id, used_fund_amount) VALUES
 ( 1, 'Dinner', 1, 300.0, 'SUCCESS', 'url1', 'Team dinner', 310.0, 1, 100.0),
-( 2, 'Trip', 2, 500.0, 'PENDING', 'url2', 'Weekend trip', 480.0, 2, 200.0);
+( 2, 'Trip', 2, 500.0, 'PROCESSING', 'url2', 'Weekend trip', 480.0, 2, 200.0);
 
 -- items
 INSERT INTO items ( payment_id, item_name, amount) VALUES
