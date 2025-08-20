@@ -3,6 +3,7 @@ package com.example.splitly.application.service;
 import com.example.splitly.application.mapper.ConsensusMapper;
 import com.example.splitly.application.serviceInterface.IConsensusService;
 import com.example.splitly.application.serviceInterface.IPaymentRequestService;
+import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.ConsensusPayment;
 import com.example.splitly.domain.entity.ConsensusPaymentId;
 import com.example.splitly.domain.entity.Payment;
@@ -10,11 +11,16 @@ import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.ConsensusRepository;
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.ConsensusPaymentRequest;
+import com.example.splitly.presentation.dto.request.UpdateStatusProcessPaymentRequest;
 import com.example.splitly.presentation.dto.response.ConsensusPaymentResponse;
+import com.example.splitly.presentation.dto.response.UserResponse;
+import com.example.splitly.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,13 +34,12 @@ import java.util.stream.Collectors;
 public class ConsensusService implements IConsensusService {
     private final ConsensusRepository consensusRepository;
     private final ConsensusMapper consensusMapper;
-    private final UserRepository userRepository;
+    private final IUserService userService;
     private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     public ConsensusPaymentResponse create(ConsensusPaymentRequest consensusPaymentRequest, Payment payment) {
-        User user = userRepository.findById(consensusPaymentRequest.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userService.getUserEntityById(consensusPaymentRequest.getUserId());
 
         ConsensusPayment consensusPayment = new ConsensusPayment();
 
@@ -45,7 +50,8 @@ public class ConsensusService implements IConsensusService {
         consensusPayment.setUser(user);
         consensusPayment.setCreatedAt(LocalDateTime.now());
         consensusPayment.setUpdatedAt(LocalDateTime.now());
-        consensusPayment.setAccepted(consensusPaymentRequest.isAccepted());
+        consensusPayment.setProcessAccepted(false);
+        consensusPayment.setSuccessAccepted(false);
 
         return consensusMapper.toConsensusPaymentResponse(consensusRepository.save(consensusPayment));
     }
@@ -60,7 +66,7 @@ public class ConsensusService implements IConsensusService {
                 .map(ConsensusPaymentRequest::getUserId)
                 .collect(Collectors.toSet());
 
-        Map<Integer, User> userMap = userRepository.findAllById(userIds).stream()
+        Map<Integer, User> userMap = userService.findAllUserByUserIds(userIds).stream()
                 .collect(Collectors.toMap(User::getUserId, Function.identity()));
 
         Set<ConsensusPayment> consensusPayments = consensusPaymentRequests.stream().map(consensusPaymentRequest -> {
@@ -80,7 +86,8 @@ public class ConsensusService implements IConsensusService {
             consensusPayment.setUser(user);
             consensusPayment.setCreatedAt(LocalDateTime.now());
             consensusPayment.setUpdatedAt(LocalDateTime.now());
-            consensusPayment.setAccepted(consensusPaymentRequest.isAccepted());
+            consensusPayment.setProcessAccepted(false);
+            consensusPayment.setSuccessAccepted(false);
 
 
             if (consensusPayment.getPayment() == null) {
@@ -129,8 +136,7 @@ public class ConsensusService implements IConsensusService {
             int userId = request.getUserId();
             int paymentId = request.getPaymentId();
 
-            User user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            User user = userService.getUserEntityById(userId);
 
             ConsensusPaymentId cpId = new ConsensusPaymentId(userId, paymentId);
 
@@ -164,10 +170,12 @@ public class ConsensusService implements IConsensusService {
         return saved.stream().map(consensusMapper::toConsensusPaymentResponse).collect(Collectors.toSet());
     }
 
-
     @Override
-    public ConsensusPaymentResponse update(Integer consensusPaymentId, ConsensusPaymentRequest consensusPaymentRequest) {
-        return null;
+    public Set<ConsensusPaymentResponse> getAllConsensusByUser() {
+        User user = userService.getCurrentUser();
+
+        return consensusRepository.findByUser_UserId(user.getUserId()).stream()
+                .map(consensusMapper::toConsensusPaymentResponse).collect(Collectors.toSet());
     }
 
     @Override
