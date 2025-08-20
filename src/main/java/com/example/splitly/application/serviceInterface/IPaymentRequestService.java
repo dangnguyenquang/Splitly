@@ -3,7 +3,12 @@ package com.example.splitly.application.serviceInterface;
 import com.example.splitly.domain.entity.Payment;
 import com.example.splitly.domain.enumerator.PaymentRequestStatus;
 import com.example.splitly.presentation.dto.request.PaymentRequest;
+import com.example.splitly.presentation.dto.request.UpdateStatusProcessPaymentRequest;
+import com.example.splitly.presentation.dto.request.UpdateStatusSuccessPaymentRequest;
+import com.example.splitly.presentation.dto.response.ConsensusPaymentResponse;
 import com.example.splitly.presentation.dto.response.PaymentResponse;
+import com.example.splitly.presentation.dto.response.UpdateStatusProcessPaymentResponse;
+import com.example.splitly.presentation.dto.response.UpdateStatusSuccessPaymentResponse;
 import io.micrometer.common.lang.Nullable;
 
 import java.util.Set;
@@ -17,6 +22,10 @@ public interface IPaymentRequestService {
 
     public Set<PaymentResponse> getAllPaymentRequest();
 
+    public UpdateStatusProcessPaymentResponse updateProcessStatusOfConsensus(Integer paymentId, UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest);
+
+    public UpdateStatusSuccessPaymentResponse updateSuccessStatusOfConsensus(Integer paymentId, UpdateStatusSuccessPaymentRequest updateStatusSuccessPaymentRequest);
+
     public PaymentResponse updatePaymentRequest(PaymentRequest paymentRequest, Integer paymentId);
 
     public PaymentResponse changeStatusPaymentRequestToFailed(Integer paymentId);
@@ -27,5 +36,5 @@ public interface IPaymentRequestService {
 
     public PaymentResponse changeStatusPaymentRequestToAwaitingConfirmation(Integer paymentId, PaymentRequest paymentRequest);
 
-    public Payment validatePaymentRequest(Integer paymentId, PaymentRequestStatus expectedStatus, @Nullable Object payload, @Nullable String payloadName);
+    public Payment validatePaymentRequest(Integer paymentId, Set<PaymentRequestStatus> expectedStatus, @Nullable Object payload, @Nullable String payloadName);
 }

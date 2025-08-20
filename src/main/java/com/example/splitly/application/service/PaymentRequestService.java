@@ -7,19 +7,13 @@ import com.example.splitly.application.serviceInterface.IConsensusService;
 import com.example.splitly.application.serviceInterface.IItemService;
 import com.example.splitly.application.serviceInterface.IPaymentRequestService;
 import com.example.splitly.application.serviceInterface.ITagService;
-import com.example.splitly.domain.entity.ConsensusPayment;
-import com.example.splitly.domain.entity.Items;
-import com.example.splitly.domain.entity.Payment;
-import com.example.splitly.domain.entity.User;
+import com.example.splitly.domain.entity.*;
 import com.example.splitly.domain.enumerator.PaymentRequestStatus;
+import com.example.splitly.domain.repository.ConsensusRepository;
 import com.example.splitly.domain.repository.PaymentRequestRepository;
 import com.example.splitly.domain.repository.UserRepository;
-import com.example.splitly.presentation.dto.request.ConsensusPaymentRequest;
-import com.example.splitly.presentation.dto.request.ItemRequest;
-import com.example.splitly.presentation.dto.request.PaymentRequest;
-import com.example.splitly.presentation.dto.response.ConsensusPaymentResponse;
-import com.example.splitly.presentation.dto.response.ItemResponse;
-import com.example.splitly.presentation.dto.response.PaymentResponse;
+import com.example.splitly.presentation.dto.request.*;
+import com.example.splitly.presentation.dto.response.*;
 import com.example.splitly.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +23,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,13 +33,14 @@ import java.util.stream.Collectors;
 public class PaymentRequestService implements IPaymentRequestService {
     private final PaymentRequestRepository paymentRequestRepository;
     private final PaymentRequestMapper paymentRequestMapper;
-    private final UserRepository userRepository;
     private final IItemService itemService;
     private final ITagService tagService;
     private final IConsensusService consensusService;
     private final TagMapper tagMapper;
     private final PaymentAssembler paymentAssembler;
     private final ItemMapper itemMapper;
+    private final UserService userService;
+    private final ConsensusRepository consensusRepository;
 
     @Override
     public PaymentResponse create(PaymentRequest paymentRequest) {
@@ -60,12 +53,7 @@ public class PaymentRequestService implements IPaymentRequestService {
             payment.setTag(tagMapper.toTag(paymentRequest.getTag()));
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        int userId = userDetails.getUserId();
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userService.getCurrentUser();
         payment.setUser(user);
 
         Payment savedPayment = paymentRequestRepository.save(payment);
@@ -73,8 +61,10 @@ public class PaymentRequestService implements IPaymentRequestService {
         Set<ItemResponse> itemResponses = itemService.createAll(paymentRequest.getItems(), savedPayment);
 
         Set<ConsensusPaymentRequest> consensusPaymentRequests = paymentRequest.getConsensusPayments().stream()
-                .peek(consensusPaymentRequest ->
-                        consensusPaymentRequest.setAccepted(false)
+                .peek(consensusPaymentRequest -> {
+                            consensusPaymentRequest.setProcessAccepted(false);
+                            consensusPaymentRequest.setSuccessAccepted(false);
+                        }
                 )
                 .collect(Collectors.toSet());
         Set<ConsensusPaymentResponse> consensusPaymentResponses = consensusService.createAll(consensusPaymentRequests, savedPayment);
@@ -108,6 +98,68 @@ public class PaymentRequestService implements IPaymentRequestService {
     }
 
     @Override
+    public UpdateStatusProcessPaymentResponse updateProcessStatusOfConsensus(Integer paymentId, UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest) {
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
+        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
+
+        User user = userService.getCurrentUser();
+        ConsensusPaymentId id = new ConsensusPaymentId(paymentId, user.getUserId());
+
+        ConsensusPayment consensusPayment = consensusRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Consensus payment not found"));
+
+
+        if (consensusPayment.isProcessAccepted() == updateStatusProcessPaymentRequest.isProcessAccepted()) {
+            throw new IllegalArgumentException("Consensus payment process status have already " + consensusPayment.isProcessAccepted());
+        }
+
+        consensusPayment.setProcessAccepted(updateStatusProcessPaymentRequest.isProcessAccepted());
+
+        consensusPayment.setUpdatedAt(LocalDateTime.now());
+
+        ConsensusPayment saved = consensusRepository.save(consensusPayment);
+
+        UpdateStatusProcessPaymentResponse updateStatusProcessPaymentResponse = new UpdateStatusProcessPaymentResponse();
+
+        updateStatusProcessPaymentResponse.setPaymentId(paymentId);
+        updateStatusProcessPaymentResponse.setUpdatedAt(LocalDateTime.now().toString());
+        updateStatusProcessPaymentResponse.setProcessAccepted(updateStatusProcessPaymentRequest.isProcessAccepted());
+
+        return updateStatusProcessPaymentResponse;
+    }
+
+    @Override
+    public UpdateStatusSuccessPaymentResponse updateSuccessStatusOfConsensus(Integer paymentId, UpdateStatusSuccessPaymentRequest updateStatusSuccessPaymentRequest) {
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.SUCCESS);
+        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
+
+        User user = userService.getCurrentUser();
+        ConsensusPaymentId id = new ConsensusPaymentId(paymentId, user.getUserId());
+
+        ConsensusPayment consensusPayment = consensusRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Consensus payment not found"));
+
+
+        if (consensusPayment.isSuccessAccepted() == updateStatusSuccessPaymentRequest.isSuccessAccepted()) {
+            throw new IllegalArgumentException("Consensus payment process status have already " + consensusPayment.isSuccessAccepted() );
+        }
+
+        consensusPayment.setSuccessAccepted(updateStatusSuccessPaymentRequest.isSuccessAccepted());
+
+        consensusPayment.setUpdatedAt(LocalDateTime.now());
+
+        ConsensusPayment saved = consensusRepository.save(consensusPayment);
+
+        UpdateStatusSuccessPaymentResponse updateStatusSuccessPaymentResponse = new UpdateStatusSuccessPaymentResponse();
+
+        updateStatusSuccessPaymentResponse.setPaymentId(paymentId);
+        updateStatusSuccessPaymentResponse.setUpdatedAt(LocalDateTime.now().toString());
+        updateStatusSuccessPaymentResponse.setSuccessAccepted(updateStatusSuccessPaymentResponse.isSuccessAccepted());
+
+        return updateStatusSuccessPaymentResponse;
+    }
+
+    @Override
     public PaymentResponse updatePaymentRequest(PaymentRequest paymentRequest, Integer paymentId) {
 //        if (paymentRequest == null || paymentId == null) {
 //            throw new IllegalArgumentException("Payment request or ID must not be null");
@@ -120,15 +172,12 @@ public class PaymentRequestService implements IPaymentRequestService {
 //            throw new IllegalStateException("Cannot update payment request with status: " + existingPayment.getStatus());
 //        }
 
-        Payment existingPayment = validatePaymentRequest(paymentId, PaymentRequestStatus.WAITING, paymentRequest, "Payment request");
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
+        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, paymentRequest, "Payment request");
 
         paymentRequestMapper.updatePayment(existingPayment, paymentRequest);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        int userId = userDetails.getUserId();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userService.getCurrentUser();
         existingPayment.setUser(user);
 
         Set<ItemResponse> itemResponses = itemService.updateItemsByPaymentId(existingPayment, paymentRequest.getItems());
@@ -156,7 +205,8 @@ public class PaymentRequestService implements IPaymentRequestService {
 //            throw new IllegalStateException("Cannot update payment request with status: " + existingPayment.getStatus());
 //        }
 
-        Payment existingPayment = validatePaymentRequest(paymentId, PaymentRequestStatus.WAITING, null, null);
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING, PaymentRequestStatus.PROCESSING, PaymentRequestStatus.AWAITING_CONFIRMATION);
+        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
 
         existingPayment.setStatus(PaymentRequestStatus.FAILED);
 
@@ -176,7 +226,8 @@ public class PaymentRequestService implements IPaymentRequestService {
 //            throw new IllegalStateException("Cannot update payment request with status: " + existingPayment.getStatus());
 //        }
 
-        Payment existingPayment = validatePaymentRequest(paymentId, PaymentRequestStatus.WAITING, null, null);
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
+        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
 
         Set<ConsensusPaymentResponse> consensusPaymentResponses = consensusService.getByPaymentId(paymentId);
 
@@ -191,12 +242,12 @@ public class PaymentRequestService implements IPaymentRequestService {
         return paymentRequestMapper.toPaymentResponse(paymentRequestRepository.save(existingPayment));
     }
 
-
     @Override
     public PaymentResponse changeStatusPaymentRequestToAwaitingConfirmation(Integer paymentId, PaymentRequest paymentRequest) {
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.PROCESSING);
         Payment existingPayment = validatePaymentRequest(
                 paymentId,
-                PaymentRequestStatus.PROCESSING,
+                allowedStatuses,
                 paymentRequest,
                 "Payment request"
         );
@@ -237,19 +288,19 @@ public class PaymentRequestService implements IPaymentRequestService {
     }
 
     @Override
-    public Payment validatePaymentRequest(Integer paymentId, PaymentRequestStatus expectedStatus, Object payload, String payloadName) {
+    public Payment validatePaymentRequest(Integer paymentId, Set<PaymentRequestStatus> expectedStatuses, Object payload, String payloadName) {
         if (paymentId == null) {
             throw new IllegalArgumentException("Payment ID must not be null");
         }
 
-        if (payload != null && payloadName != null) {
+        if (payload == null && payloadName != null) {
             throw new IllegalArgumentException(payloadName + " must not be null");
         }
 
         Payment payment = paymentRequestRepository.findById(paymentId)
                 .orElseThrow(() -> new EntityNotFoundException("Payment request not found"));
 
-        if (payment.getStatus() != expectedStatus) {
+        if (!expectedStatuses.contains(payment.getStatus())) {
             throw new IllegalStateException("Cannot update payment request with status: " + payment.getStatus());
         }
 
@@ -258,7 +309,16 @@ public class PaymentRequestService implements IPaymentRequestService {
 
     @Override
     public PaymentResponse changeStatusPaymentRequestToSplit(Integer paymentId) {
-        Payment existingPayment = validatePaymentRequest(paymentId, PaymentRequestStatus.PROCESSING, null, null);
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.AWAITING_CONFIRMATION);
+        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
+
+        Set<ConsensusPaymentResponse> consensusPaymentResponses = consensusService.getByPaymentId(paymentId);
+
+        consensusPaymentResponses.forEach(res -> {
+            if (!res.isSuccessAccepted()) {
+                throw new IllegalArgumentException("Everyone didn't confirm this payment yet");
+            }
+        });
 
         existingPayment.setStatus(PaymentRequestStatus.READY_TO_SPLIT);
 
