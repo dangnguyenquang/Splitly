@@ -3,6 +3,7 @@ package com.example.splitly.application.service;
 import com.example.splitly.application.mapper.ConsensusMapper;
 import com.example.splitly.application.serviceInterface.IConsensusService;
 import com.example.splitly.application.serviceInterface.IPaymentRequestService;
+import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.ConsensusPayment;
 import com.example.splitly.domain.entity.ConsensusPaymentId;
 import com.example.splitly.domain.entity.Payment;
@@ -10,16 +11,20 @@ import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.ConsensusRepository;
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.ConsensusPaymentRequest;
+import com.example.splitly.presentation.dto.request.UpdateStatusProcessPaymentRequest;
 import com.example.splitly.presentation.dto.response.ConsensusPaymentResponse;
+import com.example.splitly.presentation.dto.response.UserResponse;
+import com.example.splitly.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,12 +34,12 @@ import java.util.stream.Collectors;
 public class ConsensusService implements IConsensusService {
     private final ConsensusRepository consensusRepository;
     private final ConsensusMapper consensusMapper;
-    private final UserRepository userRepository;
+    private final IUserService userService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     public ConsensusPaymentResponse create(ConsensusPaymentRequest consensusPaymentRequest, Payment payment) {
-        User user = userRepository.findById(consensusPaymentRequest.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userService.getUserEntityById(consensusPaymentRequest.getUserId());
 
         ConsensusPayment consensusPayment = new ConsensusPayment();
 
@@ -45,7 +50,8 @@ public class ConsensusService implements IConsensusService {
         consensusPayment.setUser(user);
         consensusPayment.setCreatedAt(LocalDateTime.now());
         consensusPayment.setUpdatedAt(LocalDateTime.now());
-        consensusPayment.setAccepted(consensusPaymentRequest.isAccepted());
+        consensusPayment.setProcessAccepted(false);
+        consensusPayment.setSuccessAccepted(false);
 
         return consensusMapper.toConsensusPaymentResponse(consensusRepository.save(consensusPayment));
     }
@@ -60,7 +66,7 @@ public class ConsensusService implements IConsensusService {
                 .map(ConsensusPaymentRequest::getUserId)
                 .collect(Collectors.toSet());
 
-        Map<Integer, User> userMap = userRepository.findAllById(userIds).stream()
+        Map<Integer, User> userMap = userService.findAllUserByUserIds(userIds).stream()
                 .collect(Collectors.toMap(User::getUserId, Function.identity()));
 
         Set<ConsensusPayment> consensusPayments = consensusPaymentRequests.stream().map(consensusPaymentRequest -> {
@@ -80,7 +86,8 @@ public class ConsensusService implements IConsensusService {
             consensusPayment.setUser(user);
             consensusPayment.setCreatedAt(LocalDateTime.now());
             consensusPayment.setUpdatedAt(LocalDateTime.now());
-            consensusPayment.setAccepted(consensusPaymentRequest.isAccepted());
+            consensusPayment.setProcessAccepted(false);
+            consensusPayment.setSuccessAccepted(false);
 
 
             if (consensusPayment.getPayment() == null) {
@@ -92,17 +99,96 @@ public class ConsensusService implements IConsensusService {
 
         Set<ConsensusPayment> savedConsensusPayment = new HashSet<>(consensusRepository.saveAll(consensusPayments));
         return savedConsensusPayment.stream()
-                .map(consensusMapper::toConsensusPaymentResponse)
+                .map(consensusPayment -> {
+                    ConsensusPaymentResponse consensusPaymentResponse = consensusMapper.toConsensusPaymentResponse(consensusPayment);
+                    User user = customUserDetailsService.findUserById(consensusPayment.getUser().getUserId());
+
+                    consensusPaymentResponse.setPhone(user.getPhone());
+                    consensusPaymentResponse.setFullName(user.getFullName());
+                    consensusPaymentResponse.setEmail(user.getEmail());
+
+                    return consensusPaymentResponse;
+                })
                 .collect(Collectors.toSet());
     }
 
     @Override
-    public ConsensusPaymentResponse update(Integer consensusPaymentId, ConsensusPaymentRequest consensusPaymentRequest) {
-        return null;
+    @Transactional
+    public Set<ConsensusPaymentResponse> updateConsensusPaymentById(Payment payment, Set<ConsensusPaymentRequest> consensusPaymentRequests) {
+        Set<ConsensusPayment> oldConsensusPayments = consensusRepository.findByPaymentPaymentId(payment.getPaymentId());
+
+        for (ConsensusPayment cp : oldConsensusPayments) {
+            if (cp.getConsensusPaymentId() == null) {
+                cp.setConsensusPaymentId(new ConsensusPaymentId(cp.getPayment().getPaymentId(), cp.getUser().getUserId()));
+            }
+        }
+
+        Map<ConsensusPaymentId, ConsensusPayment> oldMap = oldConsensusPayments.stream()
+                .collect(Collectors.toMap(
+                        ConsensusPayment::getConsensusPaymentId,
+                        Function.identity()
+                ));
+
+        List<ConsensusPayment> toSave = new ArrayList<>();
+
+
+        for (ConsensusPaymentRequest request : consensusPaymentRequests) {
+            int userId = request.getUserId();
+            int paymentId = request.getPaymentId();
+
+            User user = userService.getUserEntityById(userId);
+
+            ConsensusPaymentId cpId = new ConsensusPaymentId(userId, paymentId);
+
+            if (oldMap.containsKey(cpId)) {
+                ConsensusPayment existing = oldMap.get(cpId);
+
+                consensusMapper.updateConsensus(existing, request);
+
+                existing.setPayment(payment);
+                existing.setUser(user);
+                existing.setUpdatedAt(LocalDateTime.now());
+
+                toSave.add(existing);
+                oldMap.remove(cpId);
+            } else {
+                ConsensusPayment newCP = consensusMapper.toConsensusPayment(request);
+                newCP.setUser(user);
+                newCP.setConsensusPaymentId(cpId);
+                newCP.setPayment(payment);
+                newCP.setCreatedAt(LocalDateTime.now());
+                newCP.setUpdatedAt(LocalDateTime.now());
+
+                toSave.add(newCP);
+            }
+        }
+
+        consensusRepository.deleteAll(oldMap.values());
+
+        List<ConsensusPayment> saved = consensusRepository.saveAll(toSave);
+
+        return saved.stream().map(consensusMapper::toConsensusPaymentResponse).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<ConsensusPaymentResponse> getAllConsensusByUser() {
+        User user = userService.getCurrentUser();
+
+        return consensusRepository.findByUser_UserId(user.getUserId()).stream()
+                .map(consensusMapper::toConsensusPaymentResponse).collect(Collectors.toSet());
     }
 
     @Override
     public Set<ConsensusPaymentResponse> getByPaymentId(Integer paymentId) {
-        return Set.of();
+        return consensusRepository.findByPaymentPaymentId(paymentId).stream().map(consensusPayment -> {
+            ConsensusPaymentResponse consensusPaymentResponse = consensusMapper.toConsensusPaymentResponse(consensusPayment);
+            User user = customUserDetailsService.findUserById(consensusPayment.getUser().getUserId());
+
+            consensusPaymentResponse.setPhone(user.getPhone());
+            consensusPaymentResponse.setFullName(user.getFullName());
+            consensusPaymentResponse.setEmail(user.getEmail());
+
+            return consensusPaymentResponse;
+        }).collect(Collectors.toSet());
     }
 }

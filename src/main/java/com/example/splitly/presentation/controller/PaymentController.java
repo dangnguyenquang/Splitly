@@ -2,6 +2,8 @@ package com.example.splitly.presentation.controller;
 
 import com.example.splitly.application.serviceInterface.IPaymentRequestService;
 import com.example.splitly.presentation.dto.request.PaymentRequest;
+import com.example.splitly.presentation.dto.request.UpdateStatusProcessPaymentRequest;
+import com.example.splitly.presentation.dto.request.UpdateStatusSuccessPaymentRequest;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,4 +38,45 @@ public class PaymentController {
         return new ResponseData<>(HttpStatus.OK.value(), "Get all payments successfully", response);
     }
 
+    @PutMapping("/{id}")
+    public ResponseData<?> updatePaymentRequest(@RequestBody PaymentRequest paymentRequest, @PathVariable Integer id) {
+        var response = paymentRequestService.updatePaymentRequest(paymentRequest, id);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Update payment successfully", response);
+    }
+
+    @PutMapping("/{id}/fail")
+    public ResponseData<?> changeStatusPaymentRequestToFailed(@PathVariable Integer id) {
+        var response = paymentRequestService.changeStatusPaymentRequestToFailed(id);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Change status payment to failed successfully", response);
+    }
+
+    @PutMapping("/{id}/processing")
+    public ResponseData<?> changeStatusPaymentRequestToProcessing(@PathVariable Integer id) {
+        var response = paymentRequestService.changeStatusPaymentRequestToProcessing(id);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Change status payment to processing successfully", response);
+    }
+
+    @PutMapping("/{id}/awaiting-confirmation")
+    public ResponseData<?> changeStatusPaymentRequestToAwaitingConfirmation(@RequestBody PaymentRequest paymentRequest, @PathVariable Integer id) {
+        var response = paymentRequestService.changeStatusPaymentRequestToAwaitingConfirmation(id, paymentRequest);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Change status payment to awaiting confirmation successfully", response);
+    }
+
+    @PutMapping("/{id}/consensus/process")
+    public ResponseData<?> updateConsensusStatusOfProcess(@PathVariable Integer id, @RequestBody UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest) {
+        var response = paymentRequestService.updateProcessStatusOfConsensus(id, updateStatusProcessPaymentRequest);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Updated consensus payment request", response);
+    }
+
+    @PutMapping("/{id}/consensus/access")
+    public ResponseData<?> updateConsensusStatusOfAccess(@PathVariable Integer id, @RequestBody UpdateStatusSuccessPaymentRequest updateStatusSuccessPaymentRequest) {
+        var response = paymentRequestService.updateSuccessStatusOfConsensus(id, updateStatusSuccessPaymentRequest);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Updated consensus payment request", response);
+    }
 }

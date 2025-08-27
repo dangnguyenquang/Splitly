@@ -18,6 +18,9 @@ public interface ConsensusMapper {
 
     @Mapping(source = "consensusPaymentId.paymentId", target = "paymentId")
     @Mapping(source = "consensusPaymentId.userId", target = "userId")
+    @Mapping(source = "user.fullName", target = "fullName")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.phone", target = "phone")
     ConsensusPaymentResponse toConsensusPaymentResponse(ConsensusPayment consensusPayment);
 
     @Mapping(target = "consensusPaymentId", ignore = true)

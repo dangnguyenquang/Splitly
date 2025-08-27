@@ -13,7 +13,9 @@ import java.io.Serializable;
 public class ConsensusPaymentRequest implements Serializable {
      private int userId;
 
-     private boolean isAccepted;
+     private boolean processAccepted;
+
+     private boolean successAccepted;
 
      private int paymentId;
 }

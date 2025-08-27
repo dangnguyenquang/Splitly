@@ -100,7 +100,8 @@ CREATE TABLE consensus_payment (
   payment_id INT,
   updated_at TIMESTAMP,
   created_at TIMESTAMP,
-  is_accepted BOOLEAN,
+  is_process_accepted BOOLEAN,
+  is_success_accepted BOOLEAN,
   PRIMARY KEY (user_id, payment_id),
   FOREIGN KEY (user_id) REFERENCES app_user(user_id),
   FOREIGN KEY (payment_id) REFERENCES payment_request(payment_id)

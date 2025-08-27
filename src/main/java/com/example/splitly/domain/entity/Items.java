@@ -14,7 +14,7 @@ public class Items {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
-    private int itemId;
+    private Integer itemId;
 
     @Column(name = "item_name")
     private String itemName;

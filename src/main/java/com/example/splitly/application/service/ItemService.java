@@ -2,7 +2,6 @@ package com.example.splitly.application.service;
 
 import com.example.splitly.application.mapper.ItemMapper;
 import com.example.splitly.application.serviceInterface.IItemService;
-import com.example.splitly.application.serviceInterface.IPaymentRequestService;
 import com.example.splitly.domain.entity.Items;
 import com.example.splitly.domain.entity.Payment;
 import com.example.splitly.domain.repository.ItemRepository;
@@ -13,9 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,7 +28,7 @@ public class ItemService implements IItemService {
         var item = itemMapper.toItems(itemRequest);
         item.setPayment(payment);
         if (item.getPayment() == null) {
-           throw new IllegalArgumentException("Item must be associated with a payment.");
+            throw new IllegalArgumentException("Item must be associated with a payment.");
         }
 
         return itemMapper.toItemResponse(itemRepository.save(item));
@@ -60,11 +58,11 @@ public class ItemService implements IItemService {
     }
 
     @Override
-    public List<ItemResponse> getItemListByPaymentId(Integer paymentId) {
+    public Set<ItemResponse> getItemListByPaymentId(Integer paymentId) {
         return itemRepository.findByPaymentPaymentId(paymentId)
                 .stream()
                 .map(itemMapper::toItemResponse)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -75,5 +73,38 @@ public class ItemService implements IItemService {
         itemMapper.updateItem(existingItem, itemRequest);
 
         return itemMapper.toItemResponse(itemRepository.save(existingItem));
+    }
+
+    @Override
+    public Set<ItemResponse> updateItemsByPaymentId(Payment payment, Set<ItemRequest> itemRequests) {
+        List<Items> oldItems = itemRepository.findByPaymentPaymentId(payment.getPaymentId());
+        Map<Integer, Items> oldItemMap = oldItems.stream()
+                .collect(Collectors.toMap(Items::getItemId, Function.identity()));
+
+        List<Items> itemsToSave = new ArrayList<>();
+        for (ItemRequest request : itemRequests) {
+            Integer itemId = request.getItemId();
+
+            if (itemId != null && oldItemMap.containsKey(itemId)) {
+                Items existingItem = oldItemMap.get(itemId);
+                itemMapper.updateItem(existingItem, request);
+                existingItem.setPayment(payment);
+
+                itemsToSave.add(existingItem);
+
+                oldItemMap.remove(itemId);
+            } else {
+                Items newItem = itemMapper.toItems(request);
+                newItem.setPayment(payment);
+
+                itemsToSave.add(newItem);
+            }
+        }
+
+        itemRepository.deleteAll(oldItemMap.values());
+
+        List<Items> savedItems = itemRepository.saveAll(itemsToSave);
+
+        return savedItems.stream().map(itemMapper::toItemResponse).collect(Collectors.toSet());
     }
 }

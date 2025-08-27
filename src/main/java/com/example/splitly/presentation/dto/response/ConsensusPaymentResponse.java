@@ -11,11 +11,19 @@ import java.time.LocalDateTime;
 public class ConsensusPaymentResponse implements Serializable {
     private int userId;
 
+    private String email;
+
+    private String fullName;
+
+    private String phone;
+
     private int paymentId;
 
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
-    private boolean isAccepted;
+    private boolean isProcessAccepted;
+
+    private boolean isSuccessAccepted;
 }

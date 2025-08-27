@@ -24,8 +24,11 @@ public class ConsensusPayment {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "is_accepted")
-    private boolean isAccepted;
+    @Column(name = "is_process_accepted")
+    private boolean isProcessAccepted;
+
+    @Column(name = "is_success_accepted")
+    private boolean isSuccessAccepted;
 
     @ManyToOne
     @MapsId("paymentId")

@@ -49,6 +49,12 @@ public class UserService implements IUserService {
     }
 
     @Override
+    public User getUserEntityById(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found in DB"));
+    }
+
+    @Override
     public UserResponse updateUser(Integer userId, UserRequest request) {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found in DB"));
@@ -107,5 +113,16 @@ public class UserService implements IUserService {
     @Override
     public boolean checkEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+    public User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Current user not found in DB"));
+    }
+
+    @Override
+    public List<User> findAllUserByUserIds(Set<Integer> userIds) {
+        return userRepository.findAllById(userIds);
     }
 }
