@@ -1,18 +1,16 @@
 package com.example.splitly.application.service;
 
-import ch.qos.logback.core.spi.ErrorCodes;
-import com.example.splitly.application.mapper.RoleMapper;
 import com.example.splitly.application.mapper.UserMapper;
-import com.example.splitly.application.serviceInterface.IRoleService;
 import com.example.splitly.application.serviceInterface.IUserService;
+import com.example.splitly.domain.entity.GroupUser;
+import com.example.splitly.domain.entity.GroupUserId;
 import com.example.splitly.domain.entity.Role;
 import com.example.splitly.domain.entity.User;
-import com.example.splitly.domain.repository.PermissionRepository;
+import com.example.splitly.domain.enumerator.InvitationStatus;
+import com.example.splitly.domain.repository.GroupUserRepository;
 import com.example.splitly.domain.repository.RoleRepository;
 import com.example.splitly.domain.repository.UserRepository;
-import com.example.splitly.presentation.dto.request.RoleRequest;
 import com.example.splitly.presentation.dto.request.UserRequest;
-import com.example.splitly.presentation.dto.response.RoleResponse;
 import com.example.splitly.presentation.dto.response.UserResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +19,10 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final RoleMapper roleMapper;
     private final RoleRepository roleRepository;
+    private final GroupUserRepository groupUserRepository;
 
     public List<UserResponse> getAll() {
         return userRepository.findAll()
@@ -79,12 +79,41 @@ public class UserService implements IUserService {
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
 
-        User user = userRepository.findByEmail(name).orElseThrow(() -> new ApplicationContextException("")); // This code will be update soon when we have application exception code
+        User user = userRepository.findByEmail(name).orElseThrow(() -> new ApplicationContextException("")); // This
+                                                                                                             // code
+                                                                                                             // will be
+                                                                                                             // update
+                                                                                                             // soon
+                                                                                                             // when we
+                                                                                                             // have
+                                                                                                             // application
+                                                                                                             // exception
+                                                                                                             // code
 
         return userMapper.toUserResponse(user);
     }
 
     @Override
+    public void handleInvitation(Long groupId, Integer userId, boolean action) {
+        GroupUserId groupUserId = GroupUserId.builder()
+                .groupId(groupId)
+                .userId(userId)
+                .build();
+        Optional<GroupUser> optional = groupUserRepository.findById(groupUserId);
+        GroupUser groupUser = optional.get();
+        if (action && groupUser.getStatus() == InvitationStatus.WAITING) {
+            groupUser.setStatus(InvitationStatus.SUCCESS);
+            groupUser.setJoinedAt(LocalDateTime.now());
+        } else if (!action && groupUser.getStatus() == InvitationStatus.WAITING){
+            groupUser.setStatus(InvitationStatus.FAILED);
+        }
+        groupUserRepository.save(groupUser);
+    }
+
+    @Override
+    public boolean checkEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 

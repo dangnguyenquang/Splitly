@@ -1,6 +1,8 @@
 package com.example.splitly.domain.entity;
 
 import com.example.splitly.domain.enumerator.Gender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -41,6 +43,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @JsonIgnore
     private Set<Role> roles;
 
     public User() {
@@ -59,8 +62,10 @@ public class User {
     }
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private Set<Payment> paymentList;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private Set<ConsensusPayment> consensusPayments = new HashSet<>();
 }

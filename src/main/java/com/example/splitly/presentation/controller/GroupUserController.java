@@ -15,27 +15,35 @@ import com.example.splitly.presentation.dto.response.ResponseData;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/manage-group")
+@RequestMapping("/management")
 @RequiredArgsConstructor
 public class GroupUserController {
     private final IGroupUser iGroupUser;
 
-    @GetMapping("/get-all-users/{groupId}")
+    @GetMapping("/groups/{groupId}/users")
     public ResponseEntity<ResponseData<?>> getAllUsersInGroup(@PathVariable Long groupId) {
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Get all users successfully!",
                 iGroupUser.getAllUserGroup(groupId));
         return ResponseEntity.ok(responseData);
     }
 
-    @PatchMapping("/invite-user")
-    public ResponseEntity<ResponseData<?>> inviteUser(@RequestParam Integer userId, @RequestParam Long groupId) {
-        iGroupUser.inviteUserToGroup(userId, groupId);
+    @GetMapping("/user/{userId}/groups")
+    public ResponseEntity<ResponseData<?>> getGroupsByUserId(@PathVariable Integer userId) {
+        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Get all groups successfully!",
+                iGroupUser.getGroupsByUserId(userId));
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PatchMapping("/groups/{groupId}/invitation")
+    public ResponseEntity<ResponseData<?>> inviteUser(@RequestParam String email, @PathVariable Long groupId) {
+        iGroupUser.inviteUserToGroup(email, groupId);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Invite user successfully!");
         return ResponseEntity.ok(responseData);
     }
 
-    @PatchMapping("/remove-user")
-    public ResponseEntity<ResponseData<?>> removeUser(@RequestParam Integer userId, @RequestParam Long groupId, @RequestParam Integer leaderId) {
+    @PatchMapping("/groups/{groupId}/removal")
+    public ResponseEntity<ResponseData<?>> removeUser(@RequestParam Integer userId, @PathVariable Long groupId,
+            @RequestParam Integer leaderId) {
         iGroupUser.removeUserOutGroup(userId, groupId, leaderId);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Remove user successfully!");
         return ResponseEntity.ok(responseData);
