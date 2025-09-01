@@ -66,6 +66,13 @@ public class PaymentController {
         return new ResponseData<>(HttpStatus.OK.value(), "Change status payment to awaiting confirmation successfully", response);
     }
 
+    @PutMapping("/{id}/ready-to-split")
+    public ResponseData<?> changeStatusPaymentRequestToReadyToSpilt(@PathVariable Integer id) {
+        var response = paymentRequestService.changeStatusPaymentRequestToSplit(id);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Change status payment to ready to split successfully", response);
+    }
+
     @PutMapping("/{id}/consensus/process")
     public ResponseData<?> updateConsensusStatusOfProcess(@PathVariable Integer id, @RequestBody UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest) {
         var response = paymentRequestService.updateProcessStatusOfConsensus(id, updateStatusProcessPaymentRequest);
@@ -73,8 +80,8 @@ public class PaymentController {
         return new ResponseData<>(HttpStatus.OK.value(), "Updated consensus payment request", response);
     }
 
-    @PutMapping("/{id}/consensus/access")
-    public ResponseData<?> updateConsensusStatusOfAccess(@PathVariable Integer id, @RequestBody UpdateStatusSuccessPaymentRequest updateStatusSuccessPaymentRequest) {
+    @PutMapping("/{id}/consensus/success")
+    public ResponseData<?> updateConsensusStatusOfSuccess(@PathVariable Integer id, @RequestBody UpdateStatusSuccessPaymentRequest updateStatusSuccessPaymentRequest) {
         var response = paymentRequestService.updateSuccessStatusOfConsensus(id, updateStatusSuccessPaymentRequest);
 
         return new ResponseData<>(HttpStatus.OK.value(), "Updated consensus payment request", response);

@@ -16,7 +16,7 @@ public class UserDebtResponse {
 
     private String note;
 
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
     private Boolean status;
 }
