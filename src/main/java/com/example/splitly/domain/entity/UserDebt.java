@@ -32,21 +32,21 @@ public class UserDebt {
     @Column(name = "amount")
     private Double amount;
 
-    @Column(name = "note")
+    @Column(name = "user_debt_note")
     private String note;
 
-    @Column(name = "create_at")
-    private LocalDateTime createAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name = "status")
     private Boolean status;
 
     @ManyToOne
-    @JoinColumn(name = "debtor_id", nullable = false, updatable = false, insertable = false)
+    @JoinColumn(name = "debtor_id", nullable = false)
     private User debtor;
 
     @ManyToOne
-    @JoinColumn(name = "creditor_id", insertable = false, updatable = false, nullable = false)
+    @JoinColumn(name = "creditor_id", nullable = false)
     private User creditor;
 
 }
