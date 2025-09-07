@@ -5,7 +5,6 @@ import com.example.splitly.domain.enumerator.PaymentRequestStatus;
 import com.example.splitly.presentation.dto.request.PaymentRequest;
 import com.example.splitly.presentation.dto.request.UpdateStatusProcessPaymentRequest;
 import com.example.splitly.presentation.dto.request.UpdateStatusSuccessPaymentRequest;
-import com.example.splitly.presentation.dto.response.ConsensusPaymentResponse;
 import com.example.splitly.presentation.dto.response.PaymentResponse;
 import com.example.splitly.presentation.dto.response.UpdateStatusProcessPaymentResponse;
 import com.example.splitly.presentation.dto.response.UpdateStatusSuccessPaymentResponse;
@@ -14,13 +13,17 @@ import io.micrometer.common.lang.Nullable;
 import java.util.Set;
 
 public interface IPaymentRequestService {
-    public PaymentResponse create(PaymentRequest paymentRequest);
+    public PaymentResponse create(PaymentRequest paymentRequest, Long groupId);
 
     public PaymentResponse getById(Integer paymentId);
 
     public Payment getPaymentEntityById(Integer paymentId);
 
-    public Set<PaymentResponse> getAllPaymentRequest();
+    public Set<PaymentResponse> getAllPaymentRequestByUserId();
+
+    public Set<PaymentResponse> getAllPaymentRequestByConsensusUserId();
+
+    public Set<PaymentResponse> getAllPaymentRequestByGroupId(Integer groupId);
 
     public UpdateStatusProcessPaymentResponse updateProcessStatusOfConsensus(Integer paymentId, UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest);
 

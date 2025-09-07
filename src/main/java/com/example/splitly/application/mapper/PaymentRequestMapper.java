@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { TagMapper.class, UserMapper.class, GroupInfoMapper.class })
 public interface PaymentRequestMapper {
     @Mapping(target = "paymentId", ignore = true)
     @Mapping(target = "user", ignore = true)
@@ -15,6 +15,7 @@ public interface PaymentRequestMapper {
     @Mapping(target = "tag", ignore = true)
     Payment toPayment(PaymentRequest paymentRequest);
 
+    @Mapping(source = "groupInfo", target = "groupInfoResponse")
     PaymentResponse toPaymentResponse(Payment payment);
 
     @Mapping(target = "user", ignore = true)

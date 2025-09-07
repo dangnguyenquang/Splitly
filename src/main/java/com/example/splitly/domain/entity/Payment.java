@@ -30,6 +30,10 @@ public class Payment {
     private User user;
 
     @ManyToOne
+    @JoinColumn(name = "group_id")
+    private GroupInfo groupInfo;
+
+    @ManyToOne
     @JoinColumn(name = "tag_id")
     private Tag tag;
 

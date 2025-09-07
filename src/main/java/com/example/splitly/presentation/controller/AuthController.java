@@ -1,7 +1,9 @@
 package com.example.splitly.presentation.controller;
 
 import com.example.splitly.application.service.CustomUserDetailsService;
+import com.example.splitly.application.serviceInterface.IAuthService;
 import com.example.splitly.presentation.dto.request.AuthDTO;
+import com.example.splitly.presentation.dto.response.AuthResponse;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,42 +25,30 @@ import java.util.Map;
 @RequestMapping("/auth")
 @RestController
 public class AuthController {
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private final IAuthService authService;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    public AuthController(IAuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ResponseData<?>> login(@RequestBody AuthDTO request) {
-        UserDetails userDetails;
         try {
-            userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        } catch (UsernameNotFoundException ex) {
-            ResponseData<?> response = new ResponseData<>(HttpStatus.NOT_FOUND.value(), "Account not found in database",
-                    null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+            AuthResponse authResponse = authService.login(request.getEmail(), request.getPassword());
 
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+            return ResponseEntity.ok(
+                    new ResponseData<>(HttpStatus.OK.value(), "Login successfully", authResponse)
+            );
+
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseData<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
         } catch (BadCredentialsException e) {
-            ResponseData<?> response = new ResponseData<>(HttpStatus.UNAUTHORIZED.value(),
-                    "Invalid email or password", null);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseData<>(HttpStatus.UNAUTHORIZED.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected error", null));
         }
-
-        final String jwt = jwtUtil.generateTokenFromPrincipal(userDetails.getUsername(), userDetails.getAuthorities()); // getUserName
-                                                                                                                        // <=>
-                                                                                                                        // getEmail
-        Map<String, String> data = new HashMap<>();
-        data.put("token", jwt);
-
-        ResponseData<?> response = new ResponseData<>(HttpStatus.OK.value(), "Login successfully", data);
-        return ResponseEntity.ok(response);
     }
 }

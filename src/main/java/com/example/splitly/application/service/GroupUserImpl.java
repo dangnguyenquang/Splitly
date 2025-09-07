@@ -1,7 +1,9 @@
 package com.example.splitly.application.service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -72,7 +74,7 @@ public class GroupUserImpl implements IGroupUser {
                 .groupId(groupId)
                 .build();
         Optional<GroupUser> optional = groupUserRepository.findById(groupUserId);
-        if (userId == leaderId) {
+        if (Objects.equals(userId, leaderId)) {
             throw new EntityExistsException("Can not remove leader");
         }
         if (optional.isPresent()) {
@@ -81,7 +83,7 @@ public class GroupUserImpl implements IGroupUser {
             if (existing.getStatus() != InvitationStatus.SUCCESS) {
                 throw new EntityNotFoundException("Not found user in group!");
             }
-            if (existing.getStatus() == InvitationStatus.SUCCESS && groupInfo.getUser().getUserId() == leaderId) {
+            if (groupInfo.getUser().getUserId() == leaderId) {
                 existing.setStatus(InvitationStatus.FAILED);
                 groupUserRepository.save(existing);
             } else {
@@ -124,4 +126,9 @@ public class GroupUserImpl implements IGroupUser {
         }
     }
 
+    @Override
+    public boolean areUsersInGroup(Long groupId, List<Integer> userIds) {
+        List<Integer> existingUserIds = groupUserRepository.findExistingSuccessfulUsersInGroup(groupId, userIds);
+        return new HashSet<>(existingUserIds).containsAll(userIds);
+    }
 }

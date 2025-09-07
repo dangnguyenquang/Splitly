@@ -49,4 +49,7 @@ public class UserDebt {
     @JoinColumn(name = "creditor_id", nullable = false)
     private User creditor;
 
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private GroupInfo groupInfo;
 }
