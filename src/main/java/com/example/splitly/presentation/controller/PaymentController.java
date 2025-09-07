@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
     private final IPaymentRequestService paymentRequestService;
 
-    @PostMapping
-    public ResponseData<?> create(@RequestBody PaymentRequest request) {
-        var response = paymentRequestService.create(request);
+    @PostMapping("/{groupId}")
+    public ResponseData<?> create(@RequestBody PaymentRequest request, @PathVariable Long groupId) {
+        var response = paymentRequestService.create(request, groupId);
 
         return new ResponseData<>(HttpStatus.OK.value(), "Create payment request successfully", response);
     }
@@ -28,14 +28,28 @@ public class PaymentController {
     public ResponseData<?> getById(@PathVariable Integer id) {
         var response = paymentRequestService.getById(id);
 
-        return new ResponseData<>(HttpStatus.OK.value(), "Get payment request successfully", response);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get payment request by id successfully", response);
     }
 
     @GetMapping()
-    public ResponseData<?> getAll() {
-        var response = paymentRequestService.getAllPaymentRequest();
+    public ResponseData<?> getAllByUserId() {
+        var response = paymentRequestService.getAllPaymentRequestByUserId();
 
         return new ResponseData<>(HttpStatus.OK.value(), "Get all payments successfully", response);
+    }
+
+    @GetMapping("/consensus")
+    public ResponseData<?> getAllByConsensusUserId() {
+        var response = paymentRequestService.getAllPaymentRequestByConsensusUserId();
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Get all payments by consensus successfully", response);
+    }
+
+    @GetMapping("/{id}/group")
+    public ResponseData<?> getAllByGroupId(@PathVariable Integer id) {
+        var response = paymentRequestService.getAllPaymentRequestByGroupId(id);
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Get all payments by group successfully", response);
     }
 
     @PutMapping("/{id}")

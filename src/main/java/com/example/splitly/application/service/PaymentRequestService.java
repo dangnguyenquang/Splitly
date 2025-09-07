@@ -3,31 +3,24 @@ package com.example.splitly.application.service;
 import com.example.splitly.application.mapper.ItemMapper;
 import com.example.splitly.application.mapper.PaymentRequestMapper;
 import com.example.splitly.application.mapper.TagMapper;
-import com.example.splitly.application.serviceInterface.IConsensusService;
-import com.example.splitly.application.serviceInterface.IItemService;
-import com.example.splitly.application.serviceInterface.IPaymentRequestService;
-import com.example.splitly.application.serviceInterface.ITagService;
+import com.example.splitly.application.serviceInterface.*;
 import com.example.splitly.domain.entity.*;
 import com.example.splitly.domain.enumerator.PaymentRequestStatus;
 import com.example.splitly.domain.repository.ConsensusRepository;
 import com.example.splitly.domain.repository.PaymentRequestRepository;
 import com.example.splitly.domain.repository.UserDebtRepository;
-import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.*;
 import com.example.splitly.presentation.dto.response.*;
-import com.example.splitly.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.cache.spi.support.AbstractReadWriteAccess;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -44,35 +37,56 @@ public class PaymentRequestService implements IPaymentRequestService {
     private final UserService userService;
     private final ConsensusRepository consensusRepository;
     private final UserDebtRepository userDebtRepository;
+    private final IGroupUser groupUser;
+    private final IGroupInfo groupInfo;
 
     @Override
-    public PaymentResponse create(PaymentRequest paymentRequest) {
-        var payment = paymentRequestMapper.toPayment(paymentRequest);
+    public PaymentResponse create(PaymentRequest paymentRequest, Long groupId) {
+        // 1. Get the current user
+        User currentUser = userService.getCurrentUser();
 
+        // 2. Validate that all involved users belong to the group
+        List<Integer> userIds = Stream.concat(
+                paymentRequest.getConsensusPayments().stream()
+                        .map(ConsensusPaymentRequest::getUserId),
+                Stream.of(currentUser.getUserId())
+        ).collect(Collectors.toList());
+
+        if (!groupUser.areUsersInGroup(groupId, userIds)) {
+            throw new IllegalArgumentException("Group does not exist or user is not in this group");
+        }
+
+        // 3. Map PaymentRequest to Payment entity
+        Payment payment = paymentRequestMapper.toPayment(paymentRequest);
         payment.setStatus(PaymentRequestStatus.WAITING);
+        payment.setUser(currentUser);
+        payment.setGroupInfo(groupInfo.findGroupInfo(groupId));
 
+        // 4. Handle tag if provided
         if (paymentRequest.getTag() != null) {
-            var tagResponse = tagService.findTagById(paymentRequest.getTag().getTagId());
+            tagService.findTagById(paymentRequest.getTag().getTagId()); // validate tag exists
             payment.setTag(tagMapper.toTag(paymentRequest.getTag()));
         }
 
-        User user = userService.getCurrentUser();
-        payment.setUser(user);
-
+        // 5. Save Payment entity
         Payment savedPayment = paymentRequestRepository.save(payment);
 
+        // 6. Create items related to the payment
         Set<ItemResponse> itemResponses = itemService.createAll(paymentRequest.getItems(), savedPayment);
 
+        // 7. Prepare consensus payment requests
         Set<ConsensusPaymentRequest> consensusPaymentRequests = paymentRequest.getConsensusPayments().stream()
-                .peek(consensusPaymentRequest -> {
-                            consensusPaymentRequest.setProcessAccepted(false);
-                            consensusPaymentRequest.setSuccessAccepted(false);
-                        }
-                )
+                .peek(c -> {
+                    c.setProcessAccepted(false);
+                    c.setSuccessAccepted(false);
+                })
                 .collect(Collectors.toSet());
-        Set<ConsensusPaymentResponse> consensusPaymentResponses = consensusService.createAll(consensusPaymentRequests, savedPayment);
 
-        PaymentResponse paymentResponse = paymentRequestMapper.toPaymentResponse(payment);
+        Set<ConsensusPaymentResponse> consensusPaymentResponses =
+                consensusService.createAll(consensusPaymentRequests, savedPayment);
+
+        // 8. Map to response DTO
+        PaymentResponse paymentResponse = paymentRequestMapper.toPaymentResponse(savedPayment);
         paymentResponse.setItems(itemResponses);
         paymentResponse.setConsensusPayments(consensusPaymentResponses);
 
@@ -94,8 +108,24 @@ public class PaymentRequestService implements IPaymentRequestService {
     }
 
     @Override
-    public Set<PaymentResponse> getAllPaymentRequest() {
-        return paymentRequestRepository.findAll().stream().map(
+    public Set<PaymentResponse> getAllPaymentRequestByUserId() {
+        User user = userService.getCurrentUser();
+        return paymentRequestRepository.getByUser_UserId(user.getUserId()).stream().map(
+                paymentAssembler::toPaymentResponse
+        ).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<PaymentResponse> getAllPaymentRequestByConsensusUserId() {
+        User user = userService.getCurrentUser();
+        return paymentRequestRepository.findDistinctByConsensusPayments_User_UserId(user.getUserId()).stream().map(
+                paymentAssembler::toPaymentResponse
+        ).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<PaymentResponse> getAllPaymentRequestByGroupId(Integer groupId) {
+        return paymentRequestRepository.getByGroupInfo_GroupId(groupId).stream().map(
                 paymentAssembler::toPaymentResponse
         ).collect(Collectors.toSet());
     }

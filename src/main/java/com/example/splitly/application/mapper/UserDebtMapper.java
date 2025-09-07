@@ -17,5 +17,4 @@ public interface UserDebtMapper {
     @Mapping(source = "debtor.fullName", target = "fullName")
     @Mapping(source = "debtor.userId", target = "debtorId")
     UserDebtResponse toUserDebtResponse(UserDebt userDebt);
-
 }

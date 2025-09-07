@@ -37,4 +37,6 @@ public class PaymentResponse implements Serializable {
     private double amount;
 
     private double usedFundAmount;
+
+    private GroupInfoResponse groupInfoResponse;
 }

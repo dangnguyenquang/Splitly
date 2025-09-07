@@ -26,4 +26,6 @@ public interface UserDebtRepository extends JpaRepository<UserDebt, Long> {
             @Param("debtorId") Integer debtorId);
     
     UserDebt findByCreditorUserIdAndDebtorUserId(Integer creditorId, Integer debtorId);
+
+    UserDebt findByUserDebtId(Integer userDebtId);
 }
