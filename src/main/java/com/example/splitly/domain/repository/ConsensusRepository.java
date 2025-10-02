@@ -12,4 +12,5 @@ import java.util.Set;
 public interface ConsensusRepository extends JpaRepository<ConsensusPayment, ConsensusPaymentId> {
     Set<ConsensusPayment> findByPaymentPaymentId(Integer paymentId);
     Set<ConsensusPayment> findByUser_UserId(Integer userId);
+    
 }

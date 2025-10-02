@@ -10,7 +10,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.splitly.application.mapper.GroupInfoMapper;
+import com.example.splitly.application.mapper.UserMapper;
 import com.example.splitly.application.serviceInterface.IGroupUser;
+import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.domain.entity.GroupUser;
 import com.example.splitly.domain.entity.GroupUserId;
@@ -18,10 +21,13 @@ import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.enumerator.InvitationStatus;
 import com.example.splitly.domain.repository.GroupUserRepository;
 import com.example.splitly.domain.repository.UserRepository;
+import com.example.splitly.presentation.dto.response.GroupInfoResponse;
+import com.example.splitly.presentation.dto.response.UserResponse;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import static com.example.splitly.util.PiiMasker.maskEmail;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +35,9 @@ public class GroupUserImpl implements IGroupUser {
 
     private final GroupUserRepository groupUserRepository;
     private final UserRepository userRepository;
+    private final IUserService iUserService;
+    private final UserMapper userMapper;
+    private final GroupInfoMapper groupInfoMapper;
 
     @Override
     public void inviteUserToGroup(String email, Long groupId) {
@@ -51,7 +60,7 @@ public class GroupUserImpl implements IGroupUser {
                 } else if (existing.getStatus() == InvitationStatus.SUCCESS) {
                     throw new EntityExistsException("User existed in group!");
                 } else {
-                    throw new EntityExistsException("Invitation has been sent!");
+                    throw new EntityExistsException("Invitation had been sent to " + maskEmail(email));
                 }
 
             } else {
@@ -63,18 +72,19 @@ public class GroupUserImpl implements IGroupUser {
                 groupUserRepository.save(groupUser);
             }
         } else {
-            throw new EntityNotFoundException("Not found user with " + email + "!");
+            throw new EntityNotFoundException("Not found user with " + maskEmail(email) + "!");
         }
     }
 
     @Override
-    public void removeUserOutGroup(Integer userId, Long groupId, Integer leaderId) {
+    public void removeUserOutGroup(Integer userId, Long groupId) {
+        User user = iUserService.getCurrentUser();
         GroupUserId groupUserId = GroupUserId.builder()
                 .userId(userId)
                 .groupId(groupId)
                 .build();
         Optional<GroupUser> optional = groupUserRepository.findById(groupUserId);
-        if (Objects.equals(userId, leaderId)) {
+        if (Objects.equals(userId, user.getUserId())) {
             throw new EntityExistsException("Can not remove leader");
         }
         if (optional.isPresent()) {
@@ -83,7 +93,7 @@ public class GroupUserImpl implements IGroupUser {
             if (existing.getStatus() != InvitationStatus.SUCCESS) {
                 throw new EntityNotFoundException("Not found user in group!");
             }
-            if (groupInfo.getUser().getUserId() == leaderId) {
+            if (groupInfo.getUser().getUserId() == user.getUserId()) {
                 existing.setStatus(InvitationStatus.FAILED);
                 groupUserRepository.save(existing);
             } else {
@@ -96,19 +106,22 @@ public class GroupUserImpl implements IGroupUser {
     }
 
     @Override
-    public List<User> getAllUserGroup(Long groupId) {
+    public List<UserResponse> getAllUserGroup(Long groupId) {
         List<User> users = groupUserRepository.findUsersByGroupId(groupId);
         if (users.isEmpty()) {
             throw new EntityNotFoundException("Not found group!");
         }
-        return users;
+        return users.stream()
+            .map(userMapper::toUserResponse)
+            .toList();
     }
 
     @Override
-    public List<GroupInfo> getGroupsByUserId(Integer userId) {
-        List<GroupInfo> groups = groupUserRepository.findAllGroupsByUserId(userId);
+    public List<GroupInfoResponse> getGroupsByUserId() {
+        User user = iUserService.getCurrentUser();
+        List<GroupInfo> groups = groupUserRepository.findAllGroupsByUserId(user.getUserId());
         if (!groups.isEmpty()) {
-            return groups;
+            return groupInfoMapper.toGroupInfoResponses(groups);
         } else {
             throw new EntityNotFoundException("Not found groups");
         }

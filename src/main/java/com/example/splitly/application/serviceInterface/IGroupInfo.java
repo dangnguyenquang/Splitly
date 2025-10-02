@@ -3,19 +3,24 @@ package com.example.splitly.application.serviceInterface;
 import java.util.List;
 
 import com.example.splitly.domain.entity.GroupInfo;
+import com.example.splitly.domain.entity.User;
 import com.example.splitly.presentation.dto.request.GroupDTO;
+import com.example.splitly.presentation.dto.response.GroupInfoResponse;
 
 
 public interface IGroupInfo {
-    List<GroupInfo> getAllGroup();
+    List<GroupInfoResponse> getAllGroup();
 
-    GroupInfo createGroup(GroupDTO groupDTO, Integer userId, List<String> emailList);
+    GroupInfoResponse createGroup(String groupName, List<String> emailList);
 
-    GroupInfo updateGroup(Long groupId, GroupDTO groupDTO, Integer leaderId);
+    GroupInfoResponse updateGroup(Long groupId, GroupDTO groupDTO);
 
-    void deleteGroup(Long groupId, Integer leaderId);
+    void deleteGroup(Long groupId);
+
+    GroupInfoResponse findGroupInfoResponse(Long groupId);
 
     GroupInfo findGroupInfo(Long groupId);
+    public User findLeader(Long groupId);
 
     void assignLeader(Long groupId, Integer userId);
 }

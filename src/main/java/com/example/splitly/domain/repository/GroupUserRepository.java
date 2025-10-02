@@ -12,6 +12,7 @@ import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.domain.entity.GroupUser;
 import com.example.splitly.domain.entity.GroupUserId;
 import com.example.splitly.domain.entity.User;
+import com.example.splitly.domain.enumerator.InvitationStatus;
 
 
 
@@ -33,4 +34,6 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
             "AND gu.status = 'SUCCESS'")
     List<Integer> findExistingSuccessfulUsersInGroup(@Param("groupId") Long groupId,
                                                      @Param("userIds") List<Integer> userIds);
+                                                 
+    boolean existsByGroupUserId_GroupIdAndUser_EmailIgnoreCaseAndStatus(Long groupId, String email, InvitationStatus status);
 }

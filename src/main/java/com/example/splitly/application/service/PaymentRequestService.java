@@ -124,7 +124,7 @@ public class PaymentRequestService implements IPaymentRequestService {
     }
 
     @Override
-    public Set<PaymentResponse> getAllPaymentRequestByGroupId(Integer groupId) {
+    public Set<PaymentResponse> getAllPaymentRequestByGroupId(Long groupId) {
         return paymentRequestRepository.getByGroupInfo_GroupId(groupId).stream().map(
                 paymentAssembler::toPaymentResponse
         ).collect(Collectors.toSet());

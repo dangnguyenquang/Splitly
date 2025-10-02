@@ -19,11 +19,13 @@ public interface IUserService {
 
     public UserResponse getMyInfo();
 
-    public void handleInvitation(Long groupId, Integer userId, boolean action);
+    public void handleInvitation(Long groupId, boolean action);
 
     public boolean checkEmail(String email);
 
     public List<User> findAllUserByUserIds(Set<Integer> userIds);
 
     public User getCurrentUser();
+
+    public void handleQuitGroup(Long groupId);
 }

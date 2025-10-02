@@ -46,7 +46,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}/group")
-    public ResponseData<?> getAllByGroupId(@PathVariable Integer id) {
+    public ResponseData<?> getAllByGroupId(@PathVariable Long id) {
         var response = paymentRequestService.getAllPaymentRequestByGroupId(id);
 
         return new ResponseData<>(HttpStatus.OK.value(), "Get all payments by group successfully", response);

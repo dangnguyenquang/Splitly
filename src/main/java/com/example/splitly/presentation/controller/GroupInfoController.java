@@ -16,8 +16,10 @@ import com.example.splitly.application.serviceInterface.IGroupInfo;
 import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.presentation.dto.request.CreateGroupRequest;
 import com.example.splitly.presentation.dto.request.GroupDTO;
+import com.example.splitly.presentation.dto.response.GroupInfoResponse;
 import com.example.splitly.presentation.dto.response.ResponseData;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -36,14 +38,13 @@ public class GroupInfoController {
     @GetMapping("/all/{groupId}")
     public ResponseEntity<ResponseData<?>> getGroupById(@PathVariable Long groupId) {
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Get all groups successfully!",
-                interfaceGroupInfo.findGroupInfo(groupId));
+                interfaceGroupInfo.findGroupInfoResponse(groupId));
         return ResponseEntity.ok(responseData);
     }
 
     @PostMapping("/create-group")
-    public ResponseEntity<ResponseData<?>> createGroupInfo(@RequestBody CreateGroupRequest createGroupRequest,
-            @RequestParam Integer userId) {
-        GroupInfo groupInfo = interfaceGroupInfo.createGroup(createGroupRequest.getGroupDTO(), userId,
+    public ResponseEntity<ResponseData<?>> createGroupInfo(@Valid @RequestBody CreateGroupRequest createGroupRequest) {
+        GroupInfoResponse groupInfo = interfaceGroupInfo.createGroup(createGroupRequest.getGroupName(),
                 createGroupRequest.getEmailList());
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Create group successfully!",
                 groupInfo);
@@ -51,19 +52,18 @@ public class GroupInfoController {
     }
 
     @PutMapping("/update-group/{groupId}")
-    public ResponseEntity<ResponseData<?>> updateGroupInfo(@PathVariable Long groupId, @RequestBody GroupDTO groupDTO,
-            @RequestParam Integer leaderId) {
+    public ResponseEntity<ResponseData<?>> updateGroupInfo(@PathVariable Long groupId, @RequestBody GroupDTO groupDTO) {
 
-        GroupInfo groupInfo = interfaceGroupInfo.updateGroup(groupId, groupDTO, leaderId);
+        GroupInfoResponse groupInfo = interfaceGroupInfo.updateGroup(groupId, groupDTO);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Update group successfully!",
                 groupInfo);
         return ResponseEntity.ok(responseData);
     }
 
     @DeleteMapping("/delete-group/{groupId}")
-    public ResponseEntity<ResponseData<?>> deleteGroupInfo(@PathVariable Long groupId, @RequestParam Integer leaderId) {
+    public ResponseEntity<ResponseData<?>> deleteGroupInfo(@PathVariable Long groupId) {
 
-        interfaceGroupInfo.deleteGroup(groupId, leaderId);
+        interfaceGroupInfo.deleteGroup(groupId);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Delete group successfully!");
         return ResponseEntity.ok(responseData);
     }

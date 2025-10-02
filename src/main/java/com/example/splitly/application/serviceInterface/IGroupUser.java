@@ -2,17 +2,17 @@ package com.example.splitly.application.serviceInterface;
 
 import java.util.List;
 
-import com.example.splitly.domain.entity.GroupInfo;
-import com.example.splitly.domain.entity.User;
+import com.example.splitly.presentation.dto.response.GroupInfoResponse;
+import com.example.splitly.presentation.dto.response.UserResponse;
 
 public interface IGroupUser {
     void inviteUserToGroup(String email, Long groupId);
 
-    void removeUserOutGroup(Integer userId, Long groupId, Integer leaderId);
+    void removeUserOutGroup(Integer userId, Long groupId);
 
-    List<User> getAllUserGroup(Long groupId);
+    List<UserResponse> getAllUserGroup(Long groupId);
 
-    List<GroupInfo> getGroupsByUserId(Integer userId);
+    List<GroupInfoResponse> getGroupsByUserId();
 
     void deleteGroupUser(Long groupId);
 

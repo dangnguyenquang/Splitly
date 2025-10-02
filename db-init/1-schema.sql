@@ -14,6 +14,8 @@ CREATE TABLE group_info (
   number_of_member INT,
   group_name VARCHAR(50),
   leader_id INT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
   FOREIGN KEY (leader_id) REFERENCES app_user(user_id)
 );
 
