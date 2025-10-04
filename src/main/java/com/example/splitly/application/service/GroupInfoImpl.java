@@ -112,5 +112,4 @@ public class GroupInfoImpl implements IGroupInfo {
         groupInfo.setUser(user);
         groupInfoRepository.save(groupInfo);
     }
-
 }

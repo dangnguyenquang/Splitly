@@ -52,9 +52,9 @@ INSERT INTO consensus_payment (user_id, payment_id, updated_at, created_at, is_p
 (3, 1, '2025-06-30 04:41:44', '2025-06-30 04:41:44', TRUE, FALSE);
 
 -- user_debt
-INSERT INTO user_debt (user_debt_id, debtor_id, creditor_id, amount, user_debt_note, created_at, status, group_id) VALUES
-(1, 2, 1, 150.0, 'Owes for dinner', '2025-06-30 04:41:44', TRUE, 1),
-(2, 3, 1, 160.0, 'Owes for dinner', '2025-06-30 04:41:44', FALSE, 1);
+INSERT INTO user_debt (user_debt_id, debtor_id, creditor_id, amount, user_debt_note, created_at, status, group_id, payment_id) VALUES
+(1, 2, 1, 150.0, 'Owes for dinner', '2025-06-30 04:41:44', TRUE, 1, 1),
+(2, 3, 1, 160.0, 'Owes for dinner', '2025-06-30 04:41:44', FALSE, 1, 1);
 
 -- roles
 INSERT INTO roles (role_id, role_name) VALUES

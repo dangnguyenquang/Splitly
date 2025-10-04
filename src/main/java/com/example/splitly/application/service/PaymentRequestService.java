@@ -227,17 +227,6 @@ public class PaymentRequestService implements IPaymentRequestService {
 
     @Override
     public PaymentResponse changeStatusPaymentRequestToFailed(Integer paymentId) {
-//        if (paymentId == null) {
-//            throw new IllegalArgumentException("Payment ID must not be null");
-//        }
-//
-//        Payment existingPayment = paymentRequestRepository.findById(paymentId)
-//                .orElseThrow(() -> new EntityNotFoundException("Payment request not found"));
-//
-//        if (existingPayment.getStatus() != PaymentRequestStatus.WAITING) {
-//            throw new IllegalStateException("Cannot update payment request with status: " + existingPayment.getStatus());
-//        }
-
         Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING, PaymentRequestStatus.PROCESSING, PaymentRequestStatus.AWAITING_CONFIRMATION);
         Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
 
@@ -253,17 +242,6 @@ public class PaymentRequestService implements IPaymentRequestService {
 
     @Override
     public PaymentResponse changeStatusPaymentRequestToProcessing(Integer paymentId) {
-//        if (paymentId == null) {
-//            throw new IllegalArgumentException("Payment ID must not be null");
-//        }
-//
-//        Payment existingPayment = paymentRequestRepository.findById(paymentId)
-//                .orElseThrow(() -> new EntityNotFoundException("Payment request not found"));
-//
-//        if (existingPayment.getStatus() != PaymentRequestStatus.WAITING) {
-//            throw new IllegalStateException("Cannot update payment request with status: " + existingPayment.getStatus());
-//        }
-
         Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
         Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
 
@@ -396,6 +374,7 @@ public class PaymentRequestService implements IPaymentRequestService {
                     .status(false)
                     .debtor(debtor)
                     .creditor(creator)
+                    .payment(existingPayment)
                     .build();
 
             userDebtRepository.save(userDebt);
@@ -404,5 +383,13 @@ public class PaymentRequestService implements IPaymentRequestService {
         paymentRequestRepository.save(existingPayment);
 
         return paymentRequestMapper.toPaymentResponse(existingPayment);
+    }
+
+    @Override
+    public void changeStatusPaymentRequestToSuccess(Integer paymentId) {
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.READY_TO_SPLIT);
+        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
+
+        existingPayment.setStatus(PaymentRequestStatus.SUCCESS);
     }
 }

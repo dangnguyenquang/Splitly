@@ -40,4 +40,6 @@ public interface IPaymentRequestService {
     public PaymentResponse changeStatusPaymentRequestToAwaitingConfirmation(Integer paymentId, PaymentRequest paymentRequest);
 
     public Payment validatePaymentRequest(Integer paymentId, Set<PaymentRequestStatus> expectedStatus, @Nullable Object payload, @Nullable String payloadName);
+
+    public void changeStatusPaymentRequestToSuccess(Integer paymentId);
 }

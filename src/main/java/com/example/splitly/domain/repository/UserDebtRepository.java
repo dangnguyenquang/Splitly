@@ -23,8 +23,16 @@ public interface UserDebtRepository extends JpaRepository<UserDebt, Long> {
             WHERE u.userId = :debtorId
             """)
     List<UserDebt> findAllDebtInGroup(@Param("groupId") Long groupId,
-            @Param("debtorId") Integer debtorId);
-    
+                                      @Param("debtorId") Integer debtorId);
+
+    @Query("""
+            SELECT ud
+            FROM UserDebt ud
+            JOIN ud.debtor u
+            WHERE ud.payment.paymentId = :paymentId
+            """)
+    List<UserDebt> findAllDebtByPaymentId(@Param("paymentId") int paymentId);
+
     UserDebt findByCreditorUserIdAndDebtorUserId(Integer creditorId, Integer debtorId);
 
     UserDebt findByUserDebtId(Integer userDebtId);

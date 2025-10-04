@@ -4,6 +4,8 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.splitly.application.serviceInterface.IGroupUser;
+import com.example.splitly.application.serviceInterface.IPaymentRequestService;
 import com.example.splitly.domain.entity.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ public class UserDebtService implements IUserDebt {
     private final UserDebtRepository userDebtRepository;
     private final UserDebtMapper userDebtMapper;
     private final UserService userService;
+    private final IGroupUser groupUser;
+    private final IPaymentRequestService paymentRequestService;
 
     @Override
     public List<UserDebtResponse> getAllUserDebt() {
@@ -37,6 +41,19 @@ public class UserDebtService implements IUserDebt {
         User user = userService.getCurrentUser();
 
         List<UserDebt> userDebts = userDebtRepository.findAllDebtInGroup(groupId, user.getUserId());
+        return userDebtMapper.toUserDebtResponse(userDebts);
+    }
+
+    @Override
+    public List<UserDebtResponse> getAllUserDebtByPaymentId(int paymentId) {
+        User user = userService.getCurrentUser();
+
+        List<UserDebt> userDebts = userDebtRepository.findAllDebtByPaymentId(paymentId);
+
+        if (!groupUser.areUsersInGroup(userDebts.getLast().getGroupInfo().getGroupId(), List.of(user.getUserId()))) {
+            throw new IllegalStateException("You don't have access to this");
+        }
+
         return userDebtMapper.toUserDebtResponse(userDebts);
     }
 
@@ -65,6 +82,12 @@ public class UserDebtService implements IUserDebt {
             userDebt.setStatus(true);
             userDebt.setCreatedAt(LocalDateTime.now());
             UserDebt savedDebt = userDebtRepository.save(userDebt);
+
+            for (UserDebtResponse userDebtResponse : getAllUserDebtByPaymentId(userDebt.getPayment().getPaymentId())) {
+                if (!userDebtResponse.getStatus()) break;
+
+                paymentRequestService.changeStatusPaymentRequestToSuccess(userDebt.getPayment().getPaymentId());
+            }
 
             return UserDebtResponse.builder()
                     .amount(savedDebt.getAmount())
