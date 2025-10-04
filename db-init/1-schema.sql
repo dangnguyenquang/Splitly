@@ -123,9 +123,11 @@ CREATE TABLE user_debt (
   created_at TIMESTAMP,
   status BOOLEAN,
   group_id INT,
+  payment_id INT,
   FOREIGN KEY (debtor_id) REFERENCES app_user(user_id),
   FOREIGN KEY (creditor_id) REFERENCES app_user(user_id),
   FOREIGN KEY (group_id) REFERENCES group_info(group_id)
+  FOREIGN KEY (payment_id) REFERENCES payment_request(payment_id)
 );
 
 -- Table: roles

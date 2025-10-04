@@ -9,5 +9,8 @@ import com.example.splitly.presentation.dto.response.UserDebtResponse;
 public interface IUserDebt {
     public List<UserDebtResponse> getAllUserDebt();
     List<UserDebtResponse> getAllUserDebtInGroup(Long groupId);
+
+    List<UserDebtResponse> getAllUserDebtByPaymentId(int paymentId);
+
     UserDebtResponse handleDebtClearance(Integer userDebtId) throws AccessDeniedException;
 }

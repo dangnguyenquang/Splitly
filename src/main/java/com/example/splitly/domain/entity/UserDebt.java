@@ -52,4 +52,8 @@ public class UserDebt {
     @ManyToOne
     @JoinColumn(name = "group_id")
     private GroupInfo groupInfo;
+
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
 }
