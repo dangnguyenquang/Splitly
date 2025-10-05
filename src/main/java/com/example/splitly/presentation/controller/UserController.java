@@ -54,10 +54,10 @@ public class UserController {
         return new ResponseData<>(HttpStatus.OK.value(), "User updated", updatedUser);
     }
 
-    @PatchMapping("/invitation/{userId}")
-    public ResponseData<?> invitationUserAccept(@PathVariable Integer userId, @RequestParam Long groupId,
+    @PatchMapping("/invitation/{groupId}")
+    public ResponseData<?> invitationUserAccept(@PathVariable Long groupId,
             @RequestParam boolean action) {
-        userService.handleInvitation(groupId, userId, action);
+        userService.handleInvitation(groupId, action);
         return new ResponseData<>(HttpStatus.OK.value(), "Handle Successfully");
     }
 }

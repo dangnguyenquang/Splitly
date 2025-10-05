@@ -23,7 +23,7 @@ public interface IPaymentRequestService {
 
     public Set<PaymentResponse> getAllPaymentRequestByConsensusUserId();
 
-    public Set<PaymentResponse> getAllPaymentRequestByGroupId(Integer groupId);
+    public Set<PaymentResponse> getAllPaymentRequestByGroupId(Long groupId);
 
     public UpdateStatusProcessPaymentResponse updateProcessStatusOfConsensus(Integer paymentId, UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest);
 

@@ -27,10 +27,10 @@ public class GroupUserController {
         return ResponseEntity.ok(responseData);
     }
 
-    @GetMapping("/user/{userId}/groups")
-    public ResponseEntity<ResponseData<?>> getGroupsByUserId(@PathVariable Integer userId) {
+    @GetMapping("/user/groups")
+    public ResponseEntity<ResponseData<?>> getGroupsByUserId() {
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Get all groups successfully!",
-                iGroupUser.getGroupsByUserId(userId));
+                iGroupUser.getGroupsByUserId());
         return ResponseEntity.ok(responseData);
     }
 
@@ -42,9 +42,8 @@ public class GroupUserController {
     }
 
     @PatchMapping("/groups/{groupId}/removal")
-    public ResponseEntity<ResponseData<?>> removeUser(@RequestParam Integer userId, @PathVariable Long groupId,
-            @RequestParam Integer leaderId) {
-        iGroupUser.removeUserOutGroup(userId, groupId, leaderId);
+    public ResponseEntity<ResponseData<?>> removeUser(@RequestParam Integer userId, @PathVariable Long groupId) {
+        iGroupUser.removeUserOutGroup(userId, groupId);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Remove user successfully!");
         return ResponseEntity.ok(responseData);
     }

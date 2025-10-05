@@ -94,26 +94,30 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public void handleInvitation(Long groupId, Integer userId, boolean action) {
+    public void handleInvitation(Long groupId, boolean action) {
+        User user = getCurrentUser();
         GroupUserId groupUserId = GroupUserId.builder()
                 .groupId(groupId)
-                .userId(userId)
+                .userId(user.getUserId())
                 .build();
         Optional<GroupUser> optional = groupUserRepository.findById(groupUserId);
-        GroupUser groupUser = optional.get();
-        if (action && groupUser.getStatus() == InvitationStatus.WAITING) {
-            groupUser.setStatus(InvitationStatus.SUCCESS);
-            groupUser.setJoinedAt(LocalDateTime.now());
-        } else if (!action && groupUser.getStatus() == InvitationStatus.WAITING){
-            groupUser.setStatus(InvitationStatus.FAILED);
+        if (optional.isPresent()) {
+            GroupUser groupUser = optional.get();
+            if (action && groupUser.getStatus() == InvitationStatus.WAITING) {
+                groupUser.setStatus(InvitationStatus.SUCCESS);
+                groupUser.setJoinedAt(LocalDateTime.now());
+            } else if (!action && groupUser.getStatus() == InvitationStatus.WAITING) {
+                groupUser.setStatus(InvitationStatus.FAILED);
+            }
+            groupUserRepository.save(groupUser);
         }
-        groupUserRepository.save(groupUser);
     }
 
     @Override
     public boolean checkEmail(String email) {
         return userRepository.existsByEmail(email);
     }
+
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -125,4 +129,5 @@ public class UserService implements IUserService {
     public List<User> findAllUserByUserIds(Set<Integer> userIds) {
         return userRepository.findAllById(userIds);
     }
+
 }

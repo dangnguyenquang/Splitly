@@ -5,8 +5,8 @@ INSERT INTO app_user ( username, phone, email, gender, password) VALUES
 ('carol', '0900000003', 'carol@example.com', 'FEMALE', '$2a$10$3EqxkuW2M0wVNBdsHMfU0OKAo0Oh9zSnjPPZYzkvGer8Rq/1StcXa');
 
 -- group_info
-INSERT INTO group_info ( number_of_member, group_name, leader_id) VALUES
-( 3, 'Group A', 2);
+INSERT INTO group_info ( number_of_member, group_name, leader_id, created_at, updated_at) VALUES
+( 3, 'Group A', 2, '2025-06-30 04:41:44', '2025-06-30 04:45:44');
 
 -- group_user
 INSERT INTO group_user (group_id, user_id, status, joined_at) VALUES

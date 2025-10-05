@@ -2,6 +2,7 @@ package com.example.splitly.domain.repository;
 
 import java.util.List;
 
+import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +37,8 @@ public interface UserDebtRepository extends JpaRepository<UserDebt, Long> {
     UserDebt findByCreditorUserIdAndDebtorUserId(Integer creditorId, Integer debtorId);
 
     UserDebt findByUserDebtId(Integer userDebtId);
+
+    boolean existsByGroupInfo_GroupIdAndStatusAndCreditor_UserIdOrGroupInfo_GroupIdAndStatusAndDebtor_UserId(
+            Long groupId1, Boolean status1, Integer creditorId,
+            Long groupId2, Boolean status2, Integer debtorId);
 }

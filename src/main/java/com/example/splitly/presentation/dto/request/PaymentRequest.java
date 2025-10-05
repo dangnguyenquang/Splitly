@@ -1,11 +1,5 @@
 package com.example.splitly.presentation.dto.request;
 
-import com.example.splitly.domain.entity.ConsensusPayment;
-import com.example.splitly.domain.entity.Items;
-import com.example.splitly.domain.entity.Tag;
-import com.example.splitly.domain.entity.User;
-import com.example.splitly.domain.enumerator.PaymentRequestStatus;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 @Getter

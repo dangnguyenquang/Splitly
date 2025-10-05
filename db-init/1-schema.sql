@@ -14,6 +14,8 @@ CREATE TABLE group_info (
   number_of_member INT,
   group_name VARCHAR(50),
   leader_id INT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
   FOREIGN KEY (leader_id) REFERENCES app_user(user_id)
 );
 
@@ -126,7 +128,7 @@ CREATE TABLE user_debt (
   payment_id INT,
   FOREIGN KEY (debtor_id) REFERENCES app_user(user_id),
   FOREIGN KEY (creditor_id) REFERENCES app_user(user_id),
-  FOREIGN KEY (group_id) REFERENCES group_info(group_id)
+  FOREIGN KEY (group_id) REFERENCES group_info(group_id),
   FOREIGN KEY (payment_id) REFERENCES payment_request(payment_id)
 );
 
