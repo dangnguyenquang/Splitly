@@ -1,24 +1,16 @@
 package com.example.splitly.application.service;
 
 import com.example.splitly.application.mapper.UserMapper;
-import com.example.splitly.application.serviceInterface.IConsensusService;
-import com.example.splitly.application.serviceInterface.IGroupInfo;
-import com.example.splitly.application.serviceInterface.IPaymentRequestService;
 import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.GroupUser;
 import com.example.splitly.domain.entity.GroupUserId;
 import com.example.splitly.domain.entity.Role;
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.enumerator.InvitationStatus;
-import com.example.splitly.domain.enumerator.PaymentRequestStatus;
 import com.example.splitly.domain.repository.GroupUserRepository;
-import com.example.splitly.domain.repository.PaymentRequestRepository;
 import com.example.splitly.domain.repository.RoleRepository;
-import com.example.splitly.domain.repository.UserDebtRepository;
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.UserRequest;
-import com.example.splitly.presentation.dto.response.PaymentResponse;
-import com.example.splitly.presentation.dto.response.PaymentUserResponse;
 import com.example.splitly.presentation.dto.response.UserResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -43,9 +34,6 @@ public class UserService implements IUserService {
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
     private final GroupUserRepository groupUserRepository;
-    private final PaymentRequestRepository paymentRequestRepository;
-    private final UserDebtRepository userDebtRepository;
-    private final IGroupInfo iGroupInfo;
 
     public List<UserResponse> getAll() {
         return userRepository.findAll()
@@ -142,28 +130,4 @@ public class UserService implements IUserService {
         return userRepository.findAllById(userIds);
     }
 
-    @Override
-    @Transactional
-    public void handleQuitGroup(Long groupId) {
-        User user = this.getCurrentUser();
-        GroupUserId groupUserId = GroupUserId.builder()
-                .groupId(groupId)
-                .userId(user.getUserId())
-                .build();
-        GroupUser groupUser = groupUserRepository.findById(groupUserId)
-                .orElseThrow(() -> new EntityNotFoundException("User was not in this group"));
-        if (user == iGroupInfo.findLeader(groupId)) {
-            throw new IllegalStateException("Leader must transfer ownership before leaving the group");
-        }
-        if (paymentRequestRepository
-                .existsByGroupInfo_GroupIdAndUser_UserIdAndStatusNot(groupId, user.getUserId(),
-                        PaymentRequestStatus.SUCCESS)
-                && userDebtRepository
-                        .existsByGroupInfo_GroupIdAndStatusAndCreditor_UserIdOrGroupInfo_GroupIdAndStatusAndDebtor_UserId(
-                                groupId, false, user.getUserId(), groupId, false, user.getUserId())) {
-            groupUser.setStatus(InvitationStatus.FAILED);
-        } else {
-            throw new IllegalStateException("Not enough conditions to quit group");
-        }
-    }
 }

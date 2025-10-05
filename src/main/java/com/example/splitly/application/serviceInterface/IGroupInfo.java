@@ -6,6 +6,7 @@ import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.presentation.dto.request.GroupDTO;
 import com.example.splitly.presentation.dto.response.GroupInfoResponse;
+import org.springframework.transaction.annotation.Transactional;
 
 
 public interface IGroupInfo {
@@ -23,4 +24,7 @@ public interface IGroupInfo {
     public User findLeader(Long groupId);
 
     void assignLeader(Long groupId, Integer userId);
+
+    @Transactional
+    void handleQuitGroup(Long groupId);
 }

@@ -26,6 +26,4 @@ public interface IUserService {
     public List<User> findAllUserByUserIds(Set<Integer> userIds);
 
     public User getCurrentUser();
-
-    public void handleQuitGroup(Long groupId);
 }

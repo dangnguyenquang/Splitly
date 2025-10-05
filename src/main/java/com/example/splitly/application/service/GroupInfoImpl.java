@@ -3,9 +3,11 @@ package com.example.splitly.application.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.splitly.domain.enumerator.PaymentRequestStatus;
+import com.example.splitly.domain.repository.*;
 import org.springframework.stereotype.Service;
 
-import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.GroupDTO;
 import com.example.splitly.presentation.dto.response.GroupInfoResponse;
 import com.example.splitly.application.mapper.GroupInfoMapper;
@@ -17,12 +19,11 @@ import com.example.splitly.domain.entity.GroupUser;
 import com.example.splitly.domain.entity.GroupUserId;
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.enumerator.InvitationStatus;
-import com.example.splitly.domain.repository.GroupInfoRepository;
-import com.example.splitly.domain.repository.GroupUserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,8 @@ public class GroupInfoImpl implements IGroupInfo {
     private final GroupUserRepository groupUserRepository;
     private final IUserService iUserService;
     private final GroupInfoMapper groupInfoMapper;
+    private final PaymentRequestRepository paymentRequestRepository;
+    private final UserDebtRepository userDebtRepository;
 
     @Override
     public List<GroupInfoResponse> getAllGroup() {
@@ -138,4 +141,28 @@ public class GroupInfoImpl implements IGroupInfo {
         groupInfoRepository.save(groupInfo);
     }
 
+    @Transactional
+    @Override
+    public void handleQuitGroup(Long groupId) {
+        User user = iUserService.getCurrentUser();
+        GroupUserId groupUserId = GroupUserId.builder()
+                .groupId(groupId)
+                .userId(user.getUserId())
+                .build();
+        GroupUser groupUser = groupUserRepository.findById(groupUserId)
+                .orElseThrow(() -> new EntityNotFoundException("User was not in this group"));
+        if (user == this.findLeader(groupId)) {
+            throw new IllegalStateException("Leader must transfer ownership before leaving the group");
+        }
+        if (paymentRequestRepository
+                .existsByGroupInfo_GroupIdAndUser_UserIdAndStatusNot(groupId, user.getUserId(),
+                        PaymentRequestStatus.SUCCESS)
+                && userDebtRepository
+                .existsByGroupInfo_GroupIdAndStatusAndCreditor_UserIdOrGroupInfo_GroupIdAndStatusAndDebtor_UserId(
+                        groupId, false, user.getUserId(), groupId, false, user.getUserId())) {
+            groupUser.setStatus(InvitationStatus.FAILED);
+        } else {
+            throw new IllegalStateException("Not enough conditions to quit group");
+        }
+    }
 }

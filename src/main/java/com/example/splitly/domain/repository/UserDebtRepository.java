@@ -12,25 +12,33 @@ import com.example.splitly.domain.entity.UserDebt;
 
 @Repository
 public interface UserDebtRepository extends JpaRepository<UserDebt, Long> {
-  List<UserDebt> findByDebtorUserId(Integer debtorId);
+    List<UserDebt> findByDebtorUserId(Integer debtorId);
 
-  @Query("""
-      SELECT ud
-      FROM UserDebt ud
-      JOIN ud.debtor u
-      JOIN GroupUser gu
-        ON gu.groupUserId.userId = u.userId
-       AND gu.groupUserId.groupId = :groupId
-      WHERE u.userId = :debtorId
-      """)
-  List<UserDebt> findAllDebtInGroup(@Param("groupId") Long groupId,
-      @Param("debtorId") Integer debtorId);
+    @Query("""
+            SELECT ud
+            FROM UserDebt ud
+            JOIN ud.debtor u
+            JOIN GroupUser gu
+              ON gu.groupUserId.userId = u.userId
+             AND gu.groupUserId.groupId = :groupId
+            WHERE u.userId = :debtorId
+            """)
+    List<UserDebt> findAllDebtInGroup(@Param("groupId") Long groupId,
+                                      @Param("debtorId") Integer debtorId);
 
-  UserDebt findByCreditorUserIdAndDebtorUserId(Integer creditorId, Integer debtorId);
+    @Query("""
+            SELECT ud
+            FROM UserDebt ud
+            JOIN ud.debtor u
+            WHERE ud.payment.paymentId = :paymentId
+            """)
+    List<UserDebt> findAllDebtByPaymentId(@Param("paymentId") int paymentId);
 
-  UserDebt findByUserDebtId(Integer userDebtId);
+    UserDebt findByCreditorUserIdAndDebtorUserId(Integer creditorId, Integer debtorId);
 
-  boolean existsByGroupInfo_GroupIdAndStatusAndCreditor_UserIdOrGroupInfo_GroupIdAndStatusAndDebtor_UserId(
-      Long groupId1, Boolean status1, Integer creditorId,
-      Long groupId2, Boolean status2, Integer debtorId);
+    UserDebt findByUserDebtId(Integer userDebtId);
+
+    boolean existsByGroupInfo_GroupIdAndStatusAndCreditor_UserIdOrGroupInfo_GroupIdAndStatusAndDebtor_UserId(
+            Long groupId1, Boolean status1, Integer creditorId,
+            Long groupId2, Boolean status2, Integer debtorId);
 }
