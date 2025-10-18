@@ -5,7 +5,10 @@ CREATE TABLE app_user (
   phone VARCHAR(10),
   email VARCHAR(50),
   gender TEXT,
-  password VARCHAR(255)
+  password VARCHAR(255),
+  is_verified BOOLEAN NOT NULL DEFAULT false,
+  otp VARCHAR(10),
+  otp_expiry TIMESTAMP
 );
 
 -- Table: group

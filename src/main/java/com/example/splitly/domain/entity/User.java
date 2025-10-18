@@ -5,9 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,6 +40,26 @@ public class User {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "otp")
+    private String otp;
+
+    @Column(name = "otp_expiry")
+    private LocalDateTime otpExpiry;
+
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified = false;
+
+    public User(String fullName, String phone, String email, Gender gender, String password, String otp, LocalDateTime otpExpiry, boolean isVerified) {
+        this.fullName = fullName;
+        this.phone = phone;
+        this.email = email;
+        this.gender = gender;
+        this.password = password;
+        this.otp = otp;
+        this.otpExpiry = otpExpiry;
+        this.isVerified = isVerified;
+    }
+
     @ManyToMany
     @JoinTable(
             name = "user_role",
@@ -51,14 +74,6 @@ public class User {
 
     public User(int userId) {
         this.userId = userId;
-    }
-
-    public User(String fullName, String phone, String email, Gender gender, String password) {
-        this.fullName = fullName;
-        this.phone = phone;
-        this.email = email;
-        this.gender = gender;
-        this.password = password;
     }
 
     @OneToMany(mappedBy = "user")
