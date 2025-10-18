@@ -3,9 +3,12 @@ package com.example.splitly.presentation.controller;
 import com.example.splitly.application.service.CustomUserDetailsService;
 import com.example.splitly.application.serviceInterface.IAuthService;
 import com.example.splitly.presentation.dto.request.AuthDTO;
+import com.example.splitly.presentation.dto.request.RegisterRequest;
+import com.example.splitly.presentation.dto.request.VerifyRequest;
 import com.example.splitly.presentation.dto.response.AuthResponse;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.security.JwtUtil;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,5 +53,21 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected error", null));
         }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<ResponseData<?>> registerUser(@Valid @RequestBody RegisterRequest request) {
+        authService.requestRegistration(request);
+        return ResponseEntity.ok(
+                new ResponseData<>(HttpStatus.OK.value(), "Registration request successful. Please check your email for the OTP.")
+        );
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<ResponseData<?>> verifyUser(@Valid @RequestBody VerifyRequest request) {
+        AuthResponse authResponse = authService.verifyRegistration(request);
+        return ResponseEntity.ok(
+                new ResponseData<>(HttpStatus.OK.value(), "Verify successfully", authResponse)
+        );
     }
 }

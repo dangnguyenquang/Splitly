@@ -1,8 +1,8 @@
 -- app_user
-INSERT INTO app_user ( username, phone, email, gender, password) VALUES
-( 'alice', '0900000001', 'alice@example.com', 'FEMALE', '$2a$10$Pp0lYRW.0aVEIAO.v0xXDOiK4fFWYbqBgVP1QXDQm4mx39y3GAXei'),
-('bob', '0900000002', 'bob@example.com', 'MALE', '$2a$10$SetVOAy0B7CsOuE/061EUeOD1aK6DRWzb65cB/dQJm.JBisBkNoCG'),
-('carol', '0900000003', 'carol@example.com', 'FEMALE', '$2a$10$3EqxkuW2M0wVNBdsHMfU0OKAo0Oh9zSnjPPZYzkvGer8Rq/1StcXa');
+INSERT INTO app_user (username, phone, email, gender, password, is_verified) VALUES
+('alice', '0900000001', 'alice@example.com', 'FEMALE', '$2a$10$Pp0lYRW.0aVEIAO.v0xXDOiK4fFWYbqBgVP1QXDQm4mx39y3GAXei', true),
+('bob', '0900000002', 'bob@example.com', 'MALE', '$2a$10$SetVOAy0B7CsOuE/061EUeOD1aK6DRWzb65cB/dQJm.JBisBkNoCG', true),
+('carol', '0900000003', 'carol@example.com', 'FEMALE', '$2a$10$3EqxkuW2M0wVNBdsHMfU0OKAo0Oh9zSnjPPZYzkvGer8Rq/1StcXa', true);
 
 -- group_info
 INSERT INTO group_info ( number_of_member, group_name, leader_id, created_at, updated_at) VALUES

@@ -5,6 +5,7 @@ import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,6 +28,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (!user.isVerified()) {
+            throw new DisabledException("Account is not yet verified. Please check your email for an OTP.");
+        }
 
         return new CustomUserDetails(user);
     }
