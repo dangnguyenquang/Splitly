@@ -1,6 +1,7 @@
 package com.example.splitly.presentation.controller;
 
 import com.example.splitly.application.service.CustomUserDetailsService;
+import com.example.splitly.application.service.EmailService;
 import com.example.splitly.application.serviceInterface.IAuthService;
 import com.example.splitly.presentation.dto.request.AuthDTO;
 import com.example.splitly.presentation.dto.request.RegisterRequest;
@@ -9,6 +10,8 @@ import com.example.splitly.presentation.dto.response.AuthResponse;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.security.JwtUtil;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,12 +31,9 @@ import java.util.Map;
 
 @RequestMapping("/auth")
 @RestController
+@RequiredArgsConstructor
 public class AuthController {
     private final IAuthService authService;
-
-    public AuthController(IAuthService authService) {
-        this.authService = authService;
-    }
 
     @PostMapping("/login")
     public ResponseEntity<ResponseData<?>> login(@RequestBody AuthDTO request) {
@@ -40,8 +41,7 @@ public class AuthController {
             AuthResponse authResponse = authService.login(request.getEmail(), request.getPassword());
 
             return ResponseEntity.ok(
-                    new ResponseData<>(HttpStatus.OK.value(), "Login successfully", authResponse)
-            );
+                    new ResponseData<>(HttpStatus.OK.value(), "Login successfully", authResponse));
 
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -59,15 +59,20 @@ public class AuthController {
     public ResponseEntity<ResponseData<?>> registerUser(@Valid @RequestBody RegisterRequest request) {
         authService.requestRegistration(request);
         return ResponseEntity.ok(
-                new ResponseData<>(HttpStatus.OK.value(), "Registration request successful. Please check your email for the OTP.")
-        );
+                new ResponseData<>(HttpStatus.OK.value(),
+                        "Registration request successful. Please check your email for the OTP."));
     }
 
     @PostMapping("/verify")
     public ResponseEntity<ResponseData<?>> verifyUser(@Valid @RequestBody VerifyRequest request) {
         AuthResponse authResponse = authService.verifyRegistration(request);
         return ResponseEntity.ok(
-                new ResponseData<>(HttpStatus.OK.value(), "Verify successfully", authResponse)
-        );
+                new ResponseData<>(HttpStatus.OK.value(), "Verify successfully", authResponse));
+    }
+
+    @PostMapping("/resend-otp/{email}")
+    public ResponseEntity<ResponseData<?>> resendOTP(@PathVariable String email) {
+        authService.sendOtp(email);
+        return ResponseEntity.ok(new ResponseData<>(HttpStatus.OK.value(), "Resend succesfully"));
     }
 }

@@ -19,6 +19,7 @@ public class GroupInfoResponse implements Serializable {
     private Integer numberOfMember;
     private String groupName;
     private Long groupId;
+    private String groupImage;
     private UserResponse leader;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

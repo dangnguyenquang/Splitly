@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -85,16 +86,25 @@ public class AuthService implements IAuthService {
         user.setPhone(request.getPhoneNumber());
         user.setGender(request.getGender());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        // Generate and set OTP
-        String otp = generateOtp();
-        user.setOtp(otp);
-        user.setOtpExpiry(LocalDateTime.now().plusMinutes(10)); // 10-minute expiry
         user.setVerified(false); // Ensure user is marked as unverified
 
         userRepository.save(user);
 
         // Send OTP email
+        sendOtp(user.getEmail());       
+    }
+
+    public void sendOtp(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+        if (user.isVerified()) {
+            throw new IllegalStateException("Email already taken.");
+        }
+        // Generate and set OTP
+        String otp = generateOtp();
+        user.setOtp(otp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(10)); // 10-minute expiry
+        userRepository.save(user);
         emailService.sendOtpEmail(user.getEmail(), otp, 10);
     }
 
@@ -143,7 +153,8 @@ public class AuthService implements IAuthService {
     }
 
     /**
-     * Helper method to generate AuthResponse after successful login or verification.
+     * Helper method to generate AuthResponse after successful login or
+     * verification.
      */
     private AuthResponse generateAuthResponse(String email) {
         // We must re-fetch UserDetails to get authorities
