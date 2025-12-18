@@ -7,6 +7,7 @@ import com.example.splitly.domain.entity.User;
 import com.example.splitly.presentation.dto.request.GroupDTO;
 import com.example.splitly.presentation.dto.response.GroupInfoResponse;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 public interface IGroupInfo {
@@ -27,4 +28,6 @@ public interface IGroupInfo {
 
     @Transactional
     void handleQuitGroup(Long groupId);
+
+    void uploadGroupAvatar(MultipartFile file, Long groupId);
 }

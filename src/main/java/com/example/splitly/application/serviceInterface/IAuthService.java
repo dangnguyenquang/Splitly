@@ -10,4 +10,6 @@ public interface IAuthService {
     void requestRegistration(RegisterRequest request);
 
     AuthResponse verifyRegistration(VerifyRequest request);
+
+    void sendOtp(String email);
 }
