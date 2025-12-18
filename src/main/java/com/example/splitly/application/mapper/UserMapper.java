@@ -1,5 +1,6 @@
 package com.example.splitly.application.mapper;
 
+import com.example.splitly.application.mapper.qualifier.WithoutRoleMapping;
 import com.example.splitly.domain.entity.Role;
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.presentation.dto.request.RoleRequest;
@@ -15,6 +16,10 @@ public interface UserMapper {
 //    User toUser(UserRequest userRequest);
 
     UserResponse toUserResponse(User user);
+
+    @WithoutRoleMapping
+    @Mapping(target = "roles", ignore = true)
+    UserResponse toUserResponseWithoutRole(User user);
 
     @Mapping(target = "roles", ignore = true)
     void updateUser(@MappingTarget User existingUser, UserRequest request);

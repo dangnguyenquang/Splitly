@@ -8,11 +8,13 @@ import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.GroupUserRepository;
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.RegisterRequest;
+import com.example.splitly.presentation.dto.request.ResendEmailRequest;
 import com.example.splitly.presentation.dto.request.VerifyRequest;
 import com.example.splitly.presentation.dto.response.AuthResponse;
 import com.example.splitly.presentation.dto.response.GroupInfoResponse;
 import com.example.splitly.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -95,7 +97,7 @@ public class AuthService implements IAuthService {
         userRepository.save(user);
 
         // Send OTP email
-        emailService.sendOtpEmail(user.getEmail(), otp, 10);
+        emailService.sendOtpEmail(user.getEmail(), otp, 1);
     }
 
     /**
@@ -131,6 +133,27 @@ public class AuthService implements IAuthService {
 
         // Log the user in and return a token
         return generateAuthResponse(user.getEmail());
+    }
+
+    @Override
+    public void resendOtp(ResendEmailRequest request) throws BadRequestException {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + request.getEmail()));
+
+        if (user.isVerified()) {
+            throw new BadRequestException("User already verified");
+        }
+
+        if (user.getOtpExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("OTP expired");
+        }
+
+        String newOtp = this.generateOtp();
+        user.setOtp(newOtp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
+        userRepository.save(user);
+
+        emailService.sendOtpEmail(user.getEmail(), newOtp, 1);
     }
 
     /**

@@ -8,6 +8,9 @@ import com.example.splitly.presentation.dto.response.UserDebtResponse;
 
 public interface IUserDebt {
     public List<UserDebtResponse> getAllUserDebt();
+
+    List<UserDebtResponse> getAllDebtsToReceive();
+
     List<UserDebtResponse> getAllUserDebtInGroup(Long groupId);
 
     List<UserDebtResponse> getAllUserDebtByPaymentId(int paymentId);

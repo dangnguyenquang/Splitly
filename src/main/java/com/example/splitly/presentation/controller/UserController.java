@@ -1,8 +1,12 @@
 package com.example.splitly.presentation.controller;
 
+import com.example.splitly.application.service.UserService;
+import com.example.splitly.application.serviceInterface.IUserConnection;
 import com.example.splitly.application.serviceInterface.IUserService;
+import com.example.splitly.presentation.dto.request.UserConnectionRequest;
 import com.example.splitly.presentation.dto.request.UserRequest;
 import com.example.splitly.presentation.dto.response.ResponseData;
+import com.example.splitly.presentation.dto.response.UserConnectionResponse;
 import com.example.splitly.presentation.dto.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,7 @@ import java.util.List;
 public class UserController {
 
     private final IUserService userService;
+    private final IUserConnection userConnectionService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -42,7 +47,6 @@ public class UserController {
     @GetMapping("/my-info")
     public ResponseData<?> getMyInfo() {
         UserResponse response = userService.getMyInfo();
-
         return new ResponseData<>(HttpStatus.OK.value(), "Get your info successfully", response);
     }
 
@@ -56,8 +60,125 @@ public class UserController {
 
     @PatchMapping("/invitation/{groupId}")
     public ResponseData<?> invitationUserAccept(@PathVariable Long groupId,
-            @RequestParam boolean action) {
+                                                @RequestParam boolean action) {
         userService.handleInvitation(groupId, action);
         return new ResponseData<>(HttpStatus.OK.value(), "Handle Successfully");
+    }
+
+    // ============= User Connection Endpoints =============
+
+    /**
+     * Send a connection request to another user
+     * Returns the user info of the person you're connecting with
+     */
+    @PostMapping("/connections")
+    public ResponseData<?> createConnection(@Valid @RequestBody UserConnectionRequest request) {
+        UserConnectionResponse connection = userConnectionService.createConnection(request);
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Connection request sent successfully", connection);
+    }
+
+    /**
+     * Get all users connected with current user (both accepted and pending)
+     * Returns list of users with connection timestamps
+     */
+    @GetMapping("/connections")
+    public ResponseData<?> getAllMyConnections() {
+        List<UserConnectionResponse> connections = userConnectionService.getAllConnections();
+        return new ResponseData<>(HttpStatus.OK.value(), "Retrieved all your connections", connections);
+    }
+
+    /**
+     * Get all users with accepted connections
+     * Returns list of connected users (your friends/contacts)
+     */
+    @GetMapping("/connections/accepted")
+    public ResponseData<?> getAcceptedConnections() {
+        List<UserConnectionResponse> connections = userConnectionService.getConnectionsByStatus(true);
+        return new ResponseData<>(HttpStatus.OK.value(), "Retrieved accepted connections", connections);
+    }
+
+    /**
+     * Get all users with pending connections (both sent and received)
+     * Returns list of users with pending connection status
+     */
+    @GetMapping("/connections/pending")
+    public ResponseData<?> getPendingConnections() {
+        List<UserConnectionResponse> connections = userConnectionService.getConnectionsByStatus(false);
+        return new ResponseData<>(HttpStatus.OK.value(), "Retrieved pending connections", connections);
+    }
+
+    /**
+     * Get connection requests you received from other users
+     * Returns list of users who sent you connection requests
+     */
+    @GetMapping("/connections/requests/received")
+    public ResponseData<?> getPendingReceivedRequests() {
+        List<UserConnectionResponse> connections = userConnectionService.getPendingReceivedRequests();
+        return new ResponseData<>(HttpStatus.OK.value(), "Retrieved received connection requests", connections);
+    }
+
+    /**
+     * Get connection requests you sent to other users
+     * Returns list of users you sent connection requests to
+     */
+    @GetMapping("/connections/requests/sent")
+    public ResponseData<?> getPendingSentRequests() {
+        List<UserConnectionResponse> connections = userConnectionService.getPendingSentRequests();
+        return new ResponseData<>(HttpStatus.OK.value(), "Retrieved sent connection requests", connections);
+    }
+
+    /**
+     * Accept a connection request
+     * Returns the user info who sent the request
+     */
+    @PatchMapping("/connections/accept")
+    public ResponseData<?> acceptConnection(
+            @RequestParam Integer requestUserId,
+            @RequestParam Integer receiveUserId) {
+        UserConnectionResponse connection = userConnectionService.acceptConnection(requestUserId, receiveUserId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Connection accepted", connection);
+    }
+
+    /**
+     * Reject a connection request
+     * Returns the user info who sent the request
+     */
+    @PatchMapping("/connections/reject")
+    public ResponseData<?> rejectConnection(
+            @RequestParam Integer requestUserId,
+            @RequestParam Integer receiveUserId) {
+        UserConnectionResponse connection = userConnectionService.changeConnectionStatus(requestUserId, receiveUserId, false);
+        return new ResponseData<>(HttpStatus.OK.value(), "Connection rejected", connection);
+    }
+
+    /**
+     * Remove a connection (accepted or pending)
+     */
+    @DeleteMapping("/connections")
+    public ResponseData<?> deleteConnection(
+            @RequestParam Integer requestUserId,
+            @RequestParam Integer receiveUserId) {
+        userConnectionService.deleteConnection(requestUserId, receiveUserId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Connection removed successfully");
+    }
+
+    @GetMapping("/search")
+    public ResponseData<?> searchUsersByEmail(@RequestParam String email) {
+        List<UserResponse> users = userService.searchUsersByEmail(email);
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Found " + users.size() + " users matching keyword",
+                users
+        );
+    }
+
+    @GetMapping("/search/all")
+    public ResponseData<?> searchUsers(@RequestParam String keyword) {
+        List<UserResponse> users = ((UserService) userService).searchUsers(keyword);
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Found " + users.size() + " users matching keyword",
+                users
+        );
     }
 }

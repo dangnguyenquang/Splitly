@@ -1,16 +1,10 @@
 package com.example.splitly.presentation.controller;
 
-import com.example.splitly.application.serviceInterface.IRoleService;
 import com.example.splitly.application.serviceInterface.IUserDebt;
-import com.example.splitly.application.serviceInterface.IUserService;
-import com.example.splitly.presentation.dto.request.RoleRequest;
 import com.example.splitly.presentation.dto.response.ResponseData;
-import com.example.splitly.presentation.dto.response.RoleResponse;
 import com.example.splitly.presentation.dto.response.UserDebtResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,10 +18,16 @@ import java.util.List;
 public class DebtController {
     private final IUserDebt userDebt;
 
-    @GetMapping
-    public ResponseData<?> getAllDebtByUserId() {
+    @GetMapping("/pay")
+    public ResponseData<?> getAllDebtsToPayByUserId() {
         List<UserDebtResponse> response = userDebt.getAllUserDebt();
-        return new ResponseData<>(HttpStatus.OK.value(), "Get all user debt successfully", response);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get all user debt to pay successfully", response);
+    }
+
+    @GetMapping("/receive")
+    public ResponseData<?> getAllDebtsToReceiveByUserId() {
+        List<UserDebtResponse> response = userDebt.getAllDebtsToReceive();
+        return new ResponseData<>(HttpStatus.OK.value(), "Get all user debt to receive successfully", response);
     }
 
     @GetMapping("/{id}/group")

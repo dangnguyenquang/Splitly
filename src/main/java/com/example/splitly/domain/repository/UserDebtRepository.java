@@ -14,6 +14,8 @@ import com.example.splitly.domain.entity.UserDebt;
 public interface UserDebtRepository extends JpaRepository<UserDebt, Long> {
     List<UserDebt> findByDebtorUserId(Integer debtorId);
 
+    List<UserDebt> findByCreditorUserId(Integer creditorId);
+
     @Query("""
             SELECT ud
             FROM UserDebt ud

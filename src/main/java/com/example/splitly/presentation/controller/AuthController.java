@@ -4,11 +4,13 @@ import com.example.splitly.application.service.CustomUserDetailsService;
 import com.example.splitly.application.serviceInterface.IAuthService;
 import com.example.splitly.presentation.dto.request.AuthDTO;
 import com.example.splitly.presentation.dto.request.RegisterRequest;
+import com.example.splitly.presentation.dto.request.ResendEmailRequest;
 import com.example.splitly.presentation.dto.request.VerifyRequest;
 import com.example.splitly.presentation.dto.response.AuthResponse;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.security.JwtUtil;
 import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +70,14 @@ public class AuthController {
         AuthResponse authResponse = authService.verifyRegistration(request);
         return ResponseEntity.ok(
                 new ResponseData<>(HttpStatus.OK.value(), "Verify successfully", authResponse)
+        );
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<ResponseData<?>> resendOtp(@Valid @RequestBody ResendEmailRequest request) throws BadRequestException {
+        authService.resendOtp(request);
+        return ResponseEntity.ok(
+                new ResponseData<>(HttpStatus.OK.value(), "Resend otp successful. Please check your email for the OTP.")
         );
     }
 }
