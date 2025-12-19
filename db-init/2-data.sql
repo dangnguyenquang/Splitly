@@ -4,6 +4,16 @@ INSERT INTO app_user (username, phone, email, gender, password, is_verified) VAL
 ('bob', '0900000002', 'bob@example.com', 'MALE', '$2a$10$SetVOAy0B7CsOuE/061EUeOD1aK6DRWzb65cB/dQJm.JBisBkNoCG', true),
 ('carol', '0900000003', 'carol@example.com', 'FEMALE', '$2a$10$3EqxkuW2M0wVNBdsHMfU0OKAo0Oh9zSnjPPZYzkvGer8Rq/1StcXa', true);
 
+-- user_connection
+INSERT INTO user_connection (
+    request_user_id,
+    receive_user_id,
+    is_accepted
+) VALUES
+      (1, 2, true),
+      (2, 3, false),
+      (3, 1, true);
+
 -- group_info
 INSERT INTO group_info ( number_of_member, group_name, group_image, image_public_id, leader_id, created_at, updated_at) VALUES
 ( 3, 'Group A',NULL, NULL, 2, '2025-06-30 04:41:44', '2025-06-30 04:45:44');

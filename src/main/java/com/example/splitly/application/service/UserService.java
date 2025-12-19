@@ -80,15 +80,15 @@ public class UserService implements IUserService {
         String name = context.getAuthentication().getName();
 
         User user = userRepository.findByEmail(name).orElseThrow(() -> new ApplicationContextException("")); // This
-                                                                                                             // code
-                                                                                                             // will be
-                                                                                                             // update
-                                                                                                             // soon
-                                                                                                             // when we
-                                                                                                             // have
-                                                                                                             // application
-                                                                                                             // exception
-                                                                                                             // code
+        // code
+        // will be
+        // update
+        // soon
+        // when we
+        // have
+        // application
+        // exception
+        // code
 
         return userMapper.toUserResponse(user);
     }
@@ -128,6 +128,52 @@ public class UserService implements IUserService {
     @Override
     public List<User> findAllUserByUserIds(Set<Integer> userIds) {
         return userRepository.findAllById(userIds);
+    }
+
+    @Override
+    public List<UserResponse> searchUsersByEmail(String keyword) {
+        User currentUser = getCurrentUser();
+
+        // Validate keyword
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new RuntimeException("Search keyword cannot be empty");
+        }
+
+        String trimmedKeyword = keyword.trim();
+
+        log.info("User {} searching for users with email keyword: {}",
+                currentUser.getUserId(), trimmedKeyword);
+
+        List<User> users = userRepository.searchByEmailKeyword(trimmedKeyword, currentUser.getUserId());
+
+        return users.stream()
+                .map(userMapper::toUserResponse)
+                .toList();
+    }
+
+
+    public List<UserResponse> searchUsers(String keyword) {
+        User currentUser = getCurrentUser();
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new RuntimeException("Search keyword cannot be empty");
+        }
+
+        String trimmedKeyword = keyword.trim();
+
+        log.info("User {} searching for users with keyword: {}",
+                currentUser.getUserId(), trimmedKeyword);
+
+        List<User> users = userRepository.searchByEmailOrUsernameKeyword(
+                trimmedKeyword,
+                currentUser.getUserId()
+        );
+
+        log.info("Found {} users matching keyword: {}", users.size(), trimmedKeyword);
+
+        return users.stream()
+                .map(userMapper::toUserResponse)
+                .toList();
     }
 
 }

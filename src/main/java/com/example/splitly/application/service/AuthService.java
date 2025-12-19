@@ -91,12 +91,13 @@ public class AuthService implements IAuthService {
         userRepository.save(user);
 
         // Send OTP email
-        sendOtp(user.getEmail());       
+        sendOtp(user.getEmail());
     }
 
     public void sendOtp(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
+
         if (user.isVerified()) {
             throw new IllegalStateException("Email already taken.");
         }
