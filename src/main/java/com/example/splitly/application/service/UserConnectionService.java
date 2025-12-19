@@ -95,38 +95,20 @@ public class UserConnectionService implements IUserConnection {
 
     @Override
     @Transactional
-    public UserConnectionResponse acceptConnection(Integer requestUserId, Integer receiveUserId) {
-        User currentUser = userService.getCurrentUser();
-
-        // Validate that current user is the receiver
-        if (!(currentUser.getUserId() == receiveUserId)) {
-            throw new RuntimeException("You can only accept connections sent to you");
-        }
-
-        return changeConnectionStatus(requestUserId, receiveUserId, true);
+    public UserConnectionResponse acceptConnection(Integer requestUserId) {
+        return changeConnectionStatus(requestUserId, true);
     }
 
     @Override
     @Transactional
     public UserConnectionResponse changeConnectionStatus(
             Integer requestUserId,
-            Integer receiveUserId,
             boolean status
     ) {
         User currentUser = userService.getCurrentUser();
 
-        // Validate that current user is involved in this connection
-        if (!(currentUser.getUserId() == requestUserId) && !(currentUser.getUserId() == receiveUserId)) {
-            throw new RuntimeException("You can only modify connections you're involved in");
-        }
-
-        // Only the receiver can accept/reject the connection
-        if (!(currentUser.getUserId() == receiveUserId)) {
-            throw new RuntimeException("Only the receiver can change connection status");
-        }
-
         UserConnection connection = userConnectionRepository
-                .findByIdRequestUserIdAndIdReceiveUserId(requestUserId, receiveUserId)
+                .findConnectionBetweenUsers(requestUserId, currentUser.getUserId())
                 .orElseThrow(() -> new RuntimeException("Connection not found"));
 
         connection.setAccepted(status);
@@ -140,22 +122,14 @@ public class UserConnectionService implements IUserConnection {
 
     @Transactional
     @Override
-    public void deleteConnection(Integer requestUserId, Integer receiveUserId) {
+    public void deleteConnection(Integer userId) {
         User currentUser = userService.getCurrentUser();
 
-        // Validate that current user is involved in this connection
-        if (!(currentUser.getUserId() == requestUserId) && !(currentUser.getUserId() == receiveUserId)) {
-            throw new RuntimeException("You can only delete connections you're involved in");
-        }
-
         UserConnection connection = userConnectionRepository
-                .findByIdRequestUserIdAndIdReceiveUserId(requestUserId, receiveUserId)
+                .findConnectionBetweenUsers(userId, currentUser.getUserId())
                 .orElseThrow(() -> new RuntimeException("Connection not found"));
 
         userConnectionRepository.delete(connection);
-
-        log.info("User {} deleted connection between user {} and user {}",
-                currentUser.getUserId(), requestUserId, receiveUserId);
     }
 
     @Override

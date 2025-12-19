@@ -25,7 +25,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE " +
             "(LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND u.id != :currentUserId")
     List<User> searchByEmailOrUsernameKeyword(
             @Param("keyword") String keyword,

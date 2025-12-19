@@ -8,13 +8,11 @@ import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.GroupUserRepository;
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.RegisterRequest;
-import com.example.splitly.presentation.dto.request.ResendEmailRequest;
 import com.example.splitly.presentation.dto.request.VerifyRequest;
 import com.example.splitly.presentation.dto.response.AuthResponse;
 import com.example.splitly.presentation.dto.response.GroupInfoResponse;
 import com.example.splitly.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -87,17 +86,27 @@ public class AuthService implements IAuthService {
         user.setPhone(request.getPhoneNumber());
         user.setGender(request.getGender());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        // Generate and set OTP
-        String otp = generateOtp();
-        user.setOtp(otp);
-        user.setOtpExpiry(LocalDateTime.now().plusMinutes(10)); // 10-minute expiry
         user.setVerified(false); // Ensure user is marked as unverified
 
         userRepository.save(user);
 
         // Send OTP email
-        emailService.sendOtpEmail(user.getEmail(), otp, 1);
+        sendOtp(user.getEmail());
+    }
+
+    public void sendOtp(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        if (user.isVerified()) {
+            throw new IllegalStateException("Email already taken.");
+        }
+        // Generate and set OTP
+        String otp = generateOtp();
+        user.setOtp(otp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(10)); // 10-minute expiry
+        userRepository.save(user);
+        emailService.sendOtpEmail(user.getEmail(), otp, 10);
     }
 
     /**
@@ -135,27 +144,6 @@ public class AuthService implements IAuthService {
         return generateAuthResponse(user.getEmail());
     }
 
-    @Override
-    public void resendOtp(ResendEmailRequest request) throws BadRequestException {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + request.getEmail()));
-
-        if (user.isVerified()) {
-            throw new BadRequestException("User already verified");
-        }
-
-        if (user.getOtpExpiry().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("OTP expired");
-        }
-
-        String newOtp = this.generateOtp();
-        user.setOtp(newOtp);
-        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
-        userRepository.save(user);
-
-        emailService.sendOtpEmail(user.getEmail(), newOtp, 1);
-    }
-
     /**
      * Generates a 6-digit numeric OTP.
      */
@@ -166,7 +154,8 @@ public class AuthService implements IAuthService {
     }
 
     /**
-     * Helper method to generate AuthResponse after successful login or verification.
+     * Helper method to generate AuthResponse after successful login or
+     * verification.
      */
     private AuthResponse generateAuthResponse(String email) {
         // We must re-fetch UserDetails to get authorities

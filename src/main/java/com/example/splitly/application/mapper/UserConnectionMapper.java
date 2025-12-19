@@ -17,7 +17,7 @@ import org.mapstruct.Mapping;
 public interface UserConnectionMapper {
 
     @Mapping(target = "id",
-            expression = "java(new UserConnectionId(dto.getRequestUserId(), dto.getReceiveUserId()))")
+            expression = "java(new UserConnectionId(requestUser.getUserId(), dto.getReceiveUserId()))")
     @Mapping(target = "accepted", constant = "false")
     @Mapping(target = "createdAt", expression = "java(LocalDateTime.now())")
     @Mapping(target = "updatedAt", expression = "java(LocalDateTime.now())")

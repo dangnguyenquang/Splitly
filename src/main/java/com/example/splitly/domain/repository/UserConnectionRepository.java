@@ -16,9 +16,15 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
     /**
      * Find connection by request user ID and receive user ID
      */
-    Optional<UserConnection> findByIdRequestUserIdAndIdReceiveUserId(
-            Integer requestUserId,
-            Integer receiveUserId
+    @Query("""
+                SELECT uc
+                FROM UserConnection uc
+                WHERE (uc.id.requestUserId = :user1 AND uc.id.receiveUserId = :user2)
+                   OR (uc.id.requestUserId = :user2 AND uc.id.receiveUserId = :user1)
+            """)
+    Optional<UserConnection> findConnectionBetweenUsers(
+            @Param("user1") Integer user1,
+            @Param("user2") Integer user2
     );
 
     /**

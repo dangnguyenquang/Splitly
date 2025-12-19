@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.splitly.application.serviceInterface.IGroupInfo;
 import com.example.splitly.domain.entity.GroupInfo;
@@ -73,6 +74,13 @@ public class GroupInfoController {
 
         interfaceGroupInfo.assignLeader(groupId, userId);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Assign leader successfully!");
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/upload-avatar/{groupId}")
+    public ResponseEntity<ResponseData<?>> uploadAvatarGroup (@PathVariable Long groupId, @RequestParam("file") MultipartFile file) {
+        interfaceGroupInfo.uploadGroupAvatar(file, groupId);
+        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!");
         return ResponseEntity.ok(responseData);
     }
 }

@@ -133,9 +133,8 @@ public class UserController {
      */
     @PatchMapping("/connections/accept")
     public ResponseData<?> acceptConnection(
-            @RequestParam Integer requestUserId,
-            @RequestParam Integer receiveUserId) {
-        UserConnectionResponse connection = userConnectionService.acceptConnection(requestUserId, receiveUserId);
+            @RequestParam Integer requestUserId) {
+        UserConnectionResponse connection = userConnectionService.acceptConnection(requestUserId);
         return new ResponseData<>(HttpStatus.OK.value(), "Connection accepted", connection);
     }
 
@@ -145,9 +144,8 @@ public class UserController {
      */
     @PatchMapping("/connections/reject")
     public ResponseData<?> rejectConnection(
-            @RequestParam Integer requestUserId,
-            @RequestParam Integer receiveUserId) {
-        UserConnectionResponse connection = userConnectionService.changeConnectionStatus(requestUserId, receiveUserId, false);
+            @RequestParam Integer requestUserId) {
+        UserConnectionResponse connection = userConnectionService.changeConnectionStatus(requestUserId,false);
         return new ResponseData<>(HttpStatus.OK.value(), "Connection rejected", connection);
     }
 
@@ -156,9 +154,8 @@ public class UserController {
      */
     @DeleteMapping("/connections")
     public ResponseData<?> deleteConnection(
-            @RequestParam Integer requestUserId,
-            @RequestParam Integer receiveUserId) {
-        userConnectionService.deleteConnection(requestUserId, receiveUserId);
+            @RequestParam Integer userId) {
+        userConnectionService.deleteConnection(userId);
         return new ResponseData<>(HttpStatus.OK.value(), "Connection removed successfully");
     }
 

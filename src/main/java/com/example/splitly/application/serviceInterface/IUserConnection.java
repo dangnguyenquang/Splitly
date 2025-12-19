@@ -14,18 +14,16 @@ public interface IUserConnection {
     List<UserConnectionResponse> getConnectionsByStatus(boolean isAccepted);
 
     UserConnectionResponse acceptConnection(
-            Integer requestUserId,
-            Integer receiveUserId
+            Integer requestUserId
     );
 
     UserConnectionResponse changeConnectionStatus(
             Integer requestUserId,
-            Integer receiveUserId,
             boolean status
     );
 
     @Transactional
-    void deleteConnection(Integer requestUserId, Integer receiveUserId);
+    void deleteConnection(Integer userId);
 
     List<UserConnectionResponse> getPendingReceivedRequests();
 

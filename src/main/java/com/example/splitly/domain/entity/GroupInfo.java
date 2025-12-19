@@ -44,6 +44,12 @@ public class GroupInfo {
     @Column(name = "group_name")
     private String groupName;
 
+    @Column(name = "group_image")
+    private String groupImage;
+
+    @Column
+    private String imagePublicId;
+
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id")
