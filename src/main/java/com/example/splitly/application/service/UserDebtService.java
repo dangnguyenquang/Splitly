@@ -28,11 +28,20 @@ public class UserDebtService implements IUserDebt {
     private final IGroupUser groupUser;
     private final IPaymentRequestService paymentRequestService;
 
+//    Check currently debt
     @Override
     public List<UserDebtResponse> getAllUserDebt() {
         User user = userService.getCurrentUser();
 
         List<UserDebt> userDebts = userDebtRepository.findByDebtorUserId(user.getUserId());
+        return userDebtMapper.toUserDebtResponse(userDebts);
+    }
+
+    @Override
+    public List<UserDebtResponse> getAllDebtsToReceive() {
+        User user = userService.getCurrentUser();
+
+        List<UserDebt> userDebts = userDebtRepository.findByCreditorUserId(user.getUserId());
         return userDebtMapper.toUserDebtResponse(userDebts);
     }
 
@@ -89,13 +98,7 @@ public class UserDebtService implements IUserDebt {
                 paymentRequestService.changeStatusPaymentRequestToSuccess(userDebt.getPayment().getPaymentId());
             }
 
-            return UserDebtResponse.builder()
-                    .amount(savedDebt.getAmount())
-                    .note(savedDebt.getNote())
-                    .status(savedDebt.getStatus())
-                    .createdAt(savedDebt.getCreatedAt())
-                    .debtorId(savedDebt.getDebtor().getUserId())
-                    .build();
+            return userDebtMapper.toUserDebtResponse(savedDebt);
         } catch (DataAccessException ex) {
             throw new RuntimeException("Failed to update debt clearance", ex);
         }

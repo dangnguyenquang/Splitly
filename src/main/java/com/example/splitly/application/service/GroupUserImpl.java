@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.example.splitly.domain.repository.UserConnectionRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ import com.example.splitly.presentation.dto.response.UserResponse;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
 import static com.example.splitly.util.PiiMasker.maskEmail;
 
 @Service
@@ -38,41 +40,77 @@ public class GroupUserImpl implements IGroupUser {
     private final IUserService iUserService;
     private final UserMapper userMapper;
     private final GroupInfoMapper groupInfoMapper;
+    private final UserConnectionRepository userConnectionRepository;
 
     @Override
     public void inviteUserToGroup(String email, Long groupId) {
+        User currentUser = iUserService.getCurrentUser();
+
         Optional<User> optional = userRepository.findByEmail(email);
-        if (optional.isPresent()) {
-            User user = optional.get();
-            GroupUserId groupUserId = GroupUserId.builder()
-                    .userId(user.getUserId())
-                    .groupId(groupId)
-                    .build();
-            Optional<GroupUser> optionalGU = groupUserRepository.findById(groupUserId);
 
-            if (optionalGU.isPresent()) {
-                GroupUser existing = optionalGU.get();
+        if (optional.isEmpty()) {
+            throw new EntityNotFoundException("Not found user with " + maskEmail(email) + "!");
+        }
 
-                if (existing.getStatus() == InvitationStatus.FAILED) {
-                    existing.setStatus(InvitationStatus.WAITING);
-                    existing.setJoinedAt(LocalDateTime.now());
-                    groupUserRepository.save(existing);
-                } else if (existing.getStatus() == InvitationStatus.SUCCESS) {
-                    throw new EntityExistsException("User existed in group!");
-                } else {
-                    throw new EntityExistsException("Invitation had been sent to " + maskEmail(email));
-                }
+        User targetUser = optional.get();
 
+        // Prevent inviting yourself
+        if (targetUser.getUserId() == (currentUser.getUserId())) {
+            throw new IllegalArgumentException("You cannot invite yourself to a group!");
+        }
+
+        // Check if users have an accepted connection
+        boolean areConnected = userConnectionRepository.areUsersConnected(
+                currentUser.getUserId(),
+                targetUser.getUserId()
+        );
+
+        if (!areConnected) {
+            throw new IllegalStateException(
+                    "You can only invite users you're connected with. " +
+                            "Please send a connection request to " + maskEmail(email) + " first."
+            );
+        }
+
+        // Check if current user has permission to invite (is member/admin of the group)
+        GroupUserId currentUserGroupId = GroupUserId.builder()
+                .userId(currentUser.getUserId())
+                .groupId(groupId)
+                .build();
+
+        Optional<GroupUser> currentUserInGroup = groupUserRepository.findById(currentUserGroupId);
+
+        if (currentUserInGroup.isEmpty() ||
+                currentUserInGroup.get().getStatus() != InvitationStatus.SUCCESS) {
+            throw new IllegalStateException("You must be a member of this group to invite others!");
+        }
+
+        GroupUserId groupUserId = GroupUserId.builder()
+                .userId(targetUser.getUserId())
+                .groupId(groupId)
+                .build();
+
+        Optional<GroupUser> optionalGU = groupUserRepository.findById(groupUserId);
+
+        if (optionalGU.isPresent()) {
+            GroupUser existing = optionalGU.get();
+
+            if (existing.getStatus() == InvitationStatus.FAILED) {
+                existing.setStatus(InvitationStatus.WAITING);
+                existing.setJoinedAt(LocalDateTime.now());
+                groupUserRepository.save(existing);
+            } else if (existing.getStatus() == InvitationStatus.SUCCESS) {
+                throw new EntityExistsException("User already exists in group!");
             } else {
-                GroupUser groupUser = GroupUser.builder()
-                        .groupUserId(groupUserId)
-                        .status(InvitationStatus.WAITING)
-                        .joinedAt(LocalDateTime.now())
-                        .build();
-                groupUserRepository.save(groupUser);
+                throw new EntityExistsException("Invitation has already been sent to " + maskEmail(email));
             }
         } else {
-            throw new EntityNotFoundException("Not found user with " + maskEmail(email) + "!");
+            GroupUser groupUser = GroupUser.builder()
+                    .groupUserId(groupUserId)
+                    .status(InvitationStatus.WAITING)
+                    .joinedAt(LocalDateTime.now())
+                    .build();
+            groupUserRepository.save(groupUser);
         }
     }
 
@@ -112,8 +150,8 @@ public class GroupUserImpl implements IGroupUser {
             throw new EntityNotFoundException("Not found group!");
         }
         return users.stream()
-            .map(userMapper::toUserResponse)
-            .toList();
+                .map(userMapper::toUserResponse)
+                .toList();
     }
 
     @Override

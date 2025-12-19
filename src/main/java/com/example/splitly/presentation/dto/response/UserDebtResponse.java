@@ -11,9 +11,7 @@ import lombok.Setter;
 @Getter
 @Builder
 public class UserDebtResponse implements Serializable {
-    private Integer debtorId;
-
-    private String fullName;
+    private UserResponse userInformation;
 
     private Double amount;
 
