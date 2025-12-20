@@ -60,16 +60,18 @@ public class UserService implements IUserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found in DB"));
 
         userMapper.updateUser(existingUser, request);
-        Set<Integer> roleIds = request.getRoles().stream()
-                .map(Integer::valueOf)
-                .collect(Collectors.toSet());
-
-        List<Role> roles = roleRepository.findAllById(roleIds);
-
+        if (request.getRoles() != null) {
+            Set<Integer> roleIds = request.getRoles().stream()
+                    .map(Integer::valueOf)
+                    .collect(Collectors.toSet());
+    
+            List<Role> roles = roleRepository.findAllById(roleIds);
+    
+            existingUser.setRoles(new HashSet<>(roles));
+        }
         existingUser.setFullName(request.getFullName());
         existingUser.setEmail(request.getEmail());
         existingUser.setPhone(request.getPhone());
-        existingUser.setRoles(new HashSet<>(roles));
 
         return userMapper.toUserResponse(userRepository.save(existingUser));
     }
