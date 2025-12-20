@@ -8,7 +8,9 @@ CREATE TABLE app_user (
   password VARCHAR(255),
   is_verified BOOLEAN NOT NULL DEFAULT false,
   otp VARCHAR(10),
-  otp_expiry TIMESTAMP
+  otp_expiry TIMESTAMP,
+  reset_token VARCHAR(255),
+  reset_token_expiry TIMESTAMP
 );
 
 -- Table: user_connection

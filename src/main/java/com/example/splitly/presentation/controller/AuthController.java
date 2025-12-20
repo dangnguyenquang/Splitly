@@ -4,6 +4,7 @@ import com.example.splitly.application.service.CustomUserDetailsService;
 import com.example.splitly.application.service.EmailService;
 import com.example.splitly.application.serviceInterface.IAuthService;
 import com.example.splitly.presentation.dto.request.AuthDTO;
+import com.example.splitly.presentation.dto.request.NewPasswordRequest;
 import com.example.splitly.presentation.dto.request.RegisterRequest;
 import com.example.splitly.presentation.dto.request.ResendEmailRequest;
 import com.example.splitly.presentation.dto.request.VerifyRequest;
@@ -76,5 +77,19 @@ public class AuthController {
     public ResponseEntity<ResponseData<?>> resendOTP(@PathVariable String email) {
         authService.sendOtp(email);
         return ResponseEntity.ok(new ResponseData<>(HttpStatus.OK.value(), "Resend succesfully"));
+    }
+
+    @PostMapping("/verify-reset")
+    public ResponseEntity<ResponseData<?>> verifyResetPasswordUser(@Valid @RequestBody VerifyRequest request) {
+        String token = authService.verifyResetPasswordOtp(request);
+        return ResponseEntity.ok(
+                new ResponseData<>(HttpStatus.OK.value(), "Verify successfully", token));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResponseData<?>> resetPasswordUser(@Valid @RequestBody NewPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(
+                new ResponseData<>(HttpStatus.OK.value(), "Reset password successfully"));
     }
 }

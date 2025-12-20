@@ -3,10 +3,12 @@ package com.example.splitly.application.service;
 import com.example.splitly.application.mapper.AuthMapper;
 import com.example.splitly.application.mapper.GroupInfoMapper;
 import com.example.splitly.application.serviceInterface.IAuthService;
+import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.GroupUserRepository;
 import com.example.splitly.domain.repository.UserRepository;
+import com.example.splitly.presentation.dto.request.NewPasswordRequest;
 import com.example.splitly.presentation.dto.request.RegisterRequest;
 import com.example.splitly.presentation.dto.request.VerifyRequest;
 import com.example.splitly.presentation.dto.response.AuthResponse;
@@ -98,9 +100,11 @@ public class AuthService implements IAuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
 
-        if (user.isVerified()) {
-            throw new IllegalStateException("Email already taken.");
+        if (user.getOtpExpiry() != null && user.getOtpExpiry().isAfter(LocalDateTime.now())) {
+            throw new IllegalStateException("Please wait for 10 minutes before requesting a new OTP.");
         }
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
         // Generate and set OTP
         String otp = generateOtp();
         user.setOtp(otp);
@@ -171,4 +175,60 @@ public class AuthService implements IAuthService {
 
         return authMapper.toAuthResponse(user, jwt, groups);
     }
+
+    @Override
+    public void resetPassword(NewPasswordRequest newPasswordRequest) {
+        User user = userRepository.findByResetToken(newPasswordRequest.getResetToken())
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "Invalid token: " + newPasswordRequest.getResetToken()));
+
+        if (user.getResetTokenExpiry() == null && user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            user.setResetToken(null);
+            userRepository.save(user);
+            throw new BadCredentialsException("Reset token has expired.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPasswordRequest.getPassword()));
+
+        // invalidate
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+
+        userRepository.save(user);
+
+    }
+
+    public String verifyResetPasswordOtp(VerifyRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + request.getEmail()));
+
+        if (!user.isVerified()) {
+            throw new IllegalStateException("Account is not verified.");
+        }
+
+        if (user.getOtp() == null || user.getOtpExpiry() == null) {
+            throw new BadCredentialsException("Invalid OTP code.");
+        }
+
+        if (user.getOtpExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadCredentialsException("OTP has expired.");
+        }
+
+        if (!user.getOtp().equals(request.getOtp())) {
+            throw new BadCredentialsException("Invalid OTP code.");
+        }
+
+        String resetToken = java.util.UUID.randomUUID().toString();
+
+        user.setResetToken(resetToken);
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(10));
+
+        // invalidate OTP
+        user.setOtp(null);
+        user.setOtpExpiry(null);
+
+        userRepository.save(user);
+        return resetToken;
+    }
+
 }
