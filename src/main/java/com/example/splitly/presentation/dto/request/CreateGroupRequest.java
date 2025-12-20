@@ -4,7 +4,6 @@ import java.util.List;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +15,13 @@ public class CreateGroupRequest {
     private String groupName;
 
     @Size(max = 5, message = "At most 5 emails per request")
-    @NotEmpty(message = "List of emails must not be empty")
     private List<@Email @NotBlank String> emailList;
+
+    private String descriptions;
+
+    @NotBlank(message = "must not be blank")
+    private String currency;
+
+    @NotBlank(message = "must not be blank")
+    private String category;
 }

@@ -15,8 +15,8 @@ INSERT INTO user_connection (
       (3, 1, true);
 
 -- group_info
-INSERT INTO group_info ( number_of_member, group_name, group_image, image_public_id, leader_id, created_at, updated_at) VALUES
-( 3, 'Group A',NULL, NULL, 2, '2025-06-30 04:41:44', '2025-06-30 04:45:44');
+INSERT INTO group_info ( number_of_member, group_name, group_image, image_public_id, leader_id, descriptions, currency, category, created_at, updated_at) VALUES
+( 3, 'Group A',NULL, NULL, 2, null, null, null, '2025-06-30 04:41:44', '2025-06-30 04:45:44');
 
 -- group_user
 INSERT INTO group_user (group_id, user_id, status, joined_at) VALUES

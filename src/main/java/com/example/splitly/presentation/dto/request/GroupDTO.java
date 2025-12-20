@@ -14,4 +14,9 @@ import lombok.Setter;
 public class GroupDTO implements Serializable{
     private Integer numberOfMember;
     private String groupName;
+    private String descriptions;
+
+    private String currency;
+
+    private String category;
 }
