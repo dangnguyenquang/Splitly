@@ -27,12 +27,20 @@ INSERT INTO group_user (group_id, user_id, status, joined_at) VALUES
 -- tag
 INSERT INTO tag ( tag_name, created_at, updated_at, is_deleted) VALUES
 ( 'Food', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
-( 'Travel', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE);
+( 'Travel', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+( 'Music', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+( 'Movie', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+( 'Sport', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+( 'Games', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+( 'Dining out', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+( 'Liquor', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+( 'Market', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE),
+( 'Utilities', '2025-06-30 04:41:44', '2025-06-30 04:41:44', FALSE);
 
 -- payment_request
-INSERT INTO payment_request (payment_id, user_id, title, tag_id, estimated_amount, status, image_url, payment_request_note, amount, used_fund_amount, group_id) VALUES
-(1, 1, 'Dinner', 1, 300.0, 'SUCCESS', 'url1', 'Team dinner', 310.0, 100.0, 1),
-(2, 2, 'Trip', 2, 500.0, 'PROCESSING', 'url2', 'Weekend trip', 480.0, 200.0, 1);
+INSERT INTO payment_request (payment_id, user_id, title, tag_id, estimated_amount, status, image_url, image_public_id, payment_request_note, amount, used_fund_amount, group_id) VALUES
+(1, 1, 'Dinner', 1, 300.0, 'SUCCESS', 'url1', '1','Team dinner', 310.0, 100.0, 1),
+(2, 2, 'Trip', 2, 500.0, 'PROCESSING', 'url2', '1','Weekend trip', 480.0, 200.0, 1);
 
 -- items
 INSERT INTO items (item_id, payment_id, item_name, amount, quantity, price_quotation) VALUES

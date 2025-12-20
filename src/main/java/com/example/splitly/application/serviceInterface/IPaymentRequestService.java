@@ -9,6 +9,7 @@ import com.example.splitly.presentation.dto.response.PaymentResponse;
 import com.example.splitly.presentation.dto.response.UpdateStatusProcessPaymentResponse;
 import com.example.splitly.presentation.dto.response.UpdateStatusSuccessPaymentResponse;
 import io.micrometer.common.lang.Nullable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Set;
 
@@ -42,4 +43,6 @@ public interface IPaymentRequestService {
     public Payment validatePaymentRequest(Integer paymentId, Set<PaymentRequestStatus> expectedStatus, @Nullable Object payload, @Nullable String payloadName);
 
     public void changeStatusPaymentRequestToSuccess(Integer paymentId);
+
+    public void uploadPaymentRequestImage(MultipartFile file, Integer paymentId);
 }

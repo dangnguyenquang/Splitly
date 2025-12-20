@@ -53,6 +53,9 @@ public class Payment {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "image_public_id")
+    private String imagePublicId;
+
     @Column(name = "payment_request_note")
     private String paymentRequestNote;
 

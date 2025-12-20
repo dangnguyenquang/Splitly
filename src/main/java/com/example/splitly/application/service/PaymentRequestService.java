@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -39,6 +40,7 @@ public class PaymentRequestService implements IPaymentRequestService {
     private final UserDebtRepository userDebtRepository;
     private final IGroupUser groupUser;
     private final IGroupInfo groupInfo;
+    private final ImageCloudinaryService imageCloudinaryService;
 
     @Override
     public PaymentResponse create(PaymentRequest paymentRequest, Long groupId) {
@@ -391,5 +393,16 @@ public class PaymentRequestService implements IPaymentRequestService {
         Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
 
         existingPayment.setStatus(PaymentRequestStatus.SUCCESS);
+    }
+
+    @Override
+    public void uploadPaymentRequestImage(MultipartFile file, Integer paymentId) {
+        Payment payment = paymentRequestRepository.getByPaymentId(paymentId);
+
+        String folder = "payment-request/" + paymentId;
+        Map<String, Object> uploadResult = imageCloudinaryService.uploadImageFile(file, folder);
+        payment.setImageUrl((String) uploadResult.get("secure_url"));
+        payment.setImagePublicId((String) uploadResult.get("public_id"));
+        paymentRequestRepository.save(payment);
     }
 }

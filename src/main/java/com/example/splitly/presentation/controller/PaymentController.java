@@ -7,8 +7,10 @@ import com.example.splitly.presentation.dto.request.UpdateStatusSuccessPaymentRe
 import com.example.splitly.presentation.dto.response.ResponseData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/payment-request")
@@ -99,5 +101,12 @@ public class PaymentController {
         var response = paymentRequestService.updateSuccessStatusOfConsensus(id, updateStatusSuccessPaymentRequest);
 
         return new ResponseData<>(HttpStatus.OK.value(), "Updated consensus payment request", response);
+    }
+
+    @PostMapping("/{id}/payment-image")
+    public ResponseEntity<ResponseData<?>> uploadPaymentImage(@PathVariable Integer id, @RequestParam("image") MultipartFile file) {
+        paymentRequestService.uploadPaymentRequestImage(file, id);
+        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!");
+        return ResponseEntity.ok(responseData);
     }
 }

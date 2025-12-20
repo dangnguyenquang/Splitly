@@ -4,6 +4,10 @@ spring:
     username: splitly
     password: password
     driver-class-name: org.postgresql.Driver
+    servlet:
+      multipart:
+        max-file-size: 10MB
+        max-request-size: 10MB
 
   jpa:
     hibernate:
@@ -23,3 +27,8 @@ server:
   port: 8080
   servlet:
     context-path: /
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:AIzaSyCnu8qy7AJWpU6FkdEUV2ItKDYsjQX_gNc}
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
