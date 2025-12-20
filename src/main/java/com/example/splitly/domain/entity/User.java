@@ -2,7 +2,6 @@ package com.example.splitly.domain.entity;
 
 import com.example.splitly.domain.enumerator.Gender;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,6 +16,8 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "app_user")
 public class User {
     @Id
@@ -49,16 +50,12 @@ public class User {
     @Column(name = "is_verified", nullable = false)
     private boolean isVerified = false;
 
-    public User(String fullName, String phone, String email, Gender gender, String password, String otp, LocalDateTime otpExpiry, boolean isVerified) {
-        this.fullName = fullName;
-        this.phone = phone;
-        this.email = email;
-        this.gender = gender;
-        this.password = password;
-        this.otp = otp;
-        this.otpExpiry = otpExpiry;
-        this.isVerified = isVerified;
-    }
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
+
 
     @ManyToMany
     @JoinTable(
@@ -69,8 +66,6 @@ public class User {
     @JsonIgnore
     private Set<Role> roles;
 
-    public User() {
-    }
 
     public User(int userId) {
         this.userId = userId;
