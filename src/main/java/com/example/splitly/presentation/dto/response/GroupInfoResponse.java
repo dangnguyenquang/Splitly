@@ -1,8 +1,4 @@
 package com.example.splitly.presentation.dto.response;
-
-import com.example.splitly.domain.entity.User;
-
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +17,9 @@ public class GroupInfoResponse implements Serializable {
     private Long groupId;
     private String groupImage;
     private UserResponse leader;
+    private String descriptions;
+    private String currency;
+    private String category;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

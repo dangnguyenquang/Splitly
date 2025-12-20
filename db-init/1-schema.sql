@@ -33,6 +33,9 @@ CREATE TABLE group_info (
   group_image VARCHAR(255),
   image_public_id VARCHAR(255),
   leader_id INT,
+  descriptions VARCHAR(255),
+  currency VARCHAR(50),
+  category VARCHAR(50),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   FOREIGN KEY (leader_id) REFERENCES app_user(user_id)
