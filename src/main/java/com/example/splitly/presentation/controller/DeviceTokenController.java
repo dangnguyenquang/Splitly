@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.splitly.application.service.DeviceTokenService;
 import com.example.splitly.presentation.dto.request.RegisterDeviceTokenRequest;
 import com.example.splitly.presentation.dto.response.ResponseData;
-import com.example.splitly.security.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
 

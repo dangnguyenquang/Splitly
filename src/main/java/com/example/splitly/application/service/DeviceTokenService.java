@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.DeviceToken;
-import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.repository.DeviceTokenRepository;
 import com.example.splitly.presentation.dto.request.RegisterDeviceTokenRequest;
 
@@ -23,19 +22,19 @@ public class DeviceTokenService {
   @Transactional
   public void register(RegisterDeviceTokenRequest req) {
     Integer userId = iUserService.getCurrentUser().getUserId();
-    var now = LocalDateTime.now();
+    LocalDateTime now = LocalDateTime.now();
 
-    var entity = deviceTokenRepository.findByUserIdAndDeviceId(userId, req.getDeviceId())
+    DeviceToken deviceToken = deviceTokenRepository.findByUserIdAndDeviceId(userId, req.getDeviceId())
         .orElseGet(DeviceToken::new);
 
-    entity.setUserId(userId);
-    entity.setDeviceId(req.getDeviceId());
-    entity.setToken(req.getToken());
-    entity.setPlatform(req.getPlatform() == null ? "ANDROID" : req.getPlatform());
-    entity.setActive(true);
-    entity.setLastSeenAt(now);
-    entity.setUpdatedAt(now);
+    deviceToken.setUserId(userId);
+    deviceToken.setDeviceId(req.getDeviceId());
+    deviceToken.setToken(req.getToken());
+    deviceToken.setPlatform(req.getPlatform() == null ? "ANDROID" : req.getPlatform());
+    deviceToken.setActive(true);
+    deviceToken.setLastSeenAt(now);
+    deviceToken.setUpdatedAt(now);
 
-    deviceTokenRepository.save(entity);
+    deviceTokenRepository.save(deviceToken);
   }
 }

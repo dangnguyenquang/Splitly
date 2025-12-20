@@ -12,7 +12,7 @@ import com.example.splitly.domain.entity.DeviceToken;
 public interface DeviceTokenRepository extends JpaRepository<DeviceToken, Long> {
     Optional<DeviceToken> findByUserIdAndDeviceId(Integer userId, String deviceId);
 
-    List<DeviceToken> findByUserIdAndActiveTrue(Integer userId);
+    List<DeviceToken> findByUserIdInAndActiveTrue(List<Integer> userIds);
 
     Optional<DeviceToken> findByToken(String token);
 }
