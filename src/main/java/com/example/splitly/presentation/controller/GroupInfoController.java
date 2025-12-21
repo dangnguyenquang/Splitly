@@ -75,11 +75,4 @@ public class GroupInfoController {
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Assign leader successfully!");
         return ResponseEntity.ok(responseData);
     }
-
-    @PostMapping("/upload-avatar/{groupId}")
-    public ResponseEntity<ResponseData<?>> uploadAvatarGroup (@PathVariable Long groupId, @RequestParam("file") MultipartFile file) {
-        interfaceGroupInfo.uploadGroupAvatar(file, groupId);
-        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!");
-        return ResponseEntity.ok(responseData);
-    }
 }

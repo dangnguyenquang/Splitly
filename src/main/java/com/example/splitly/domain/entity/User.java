@@ -38,6 +38,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @Column(name = "user_image")
+    private String userImage;
+
+    @Column(name = "image_public_id")
+    private String imagePublicId;
+
     @Column(name = "password")
     private String password;
 
