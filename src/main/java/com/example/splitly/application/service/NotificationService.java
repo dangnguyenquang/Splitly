@@ -53,14 +53,12 @@ public class NotificationService implements INotificationService {
         if (recipientUserIds.isEmpty()) {
             throw new IllegalArgumentException("List user is empty");
         }
+        NotificationEvent event = this.storeEventAndRecipients(notificationMessageRequest, recipientUserIds);
         List<DeviceToken> tokens = tokenRepo.findByUserIdInAndActiveTrue(recipientUserIds);
         if (tokens.isEmpty()) {
-            throw new IllegalArgumentException("User device is not register");
-        } else {
-            NotificationEvent event = this.storeEventAndRecipients(notificationMessageRequest, recipientUserIds);
-            pushToRecipients(event.getEventId(), notificationMessageRequest, recipientUserIds);
+            return;
         }
-
+        pushToRecipients(event.getEventId(), notificationMessageRequest, recipientUserIds);
     }
 
     @Transactional
