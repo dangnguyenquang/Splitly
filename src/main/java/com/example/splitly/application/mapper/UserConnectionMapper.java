@@ -61,7 +61,7 @@ public interface UserConnectionMapper {
         response.setUsername(connectedUser.getFullName());
         response.setEmail(connectedUser.getEmail());
         response.setFullName(connectedUser.getFullName());
-        response.setAvatarUrl("");
+        response.setAvatarUrl(connectedUser.getUserImage());
 
         // Map connection details
         response.setCreatedAt(entity.getCreatedAt());
