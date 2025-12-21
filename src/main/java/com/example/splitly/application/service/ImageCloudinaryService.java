@@ -3,6 +3,8 @@ package com.example.splitly.application.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +31,7 @@ public class ImageCloudinaryService {
     public final IUserService iUserService;
     public final UserRepository userRepository;
 
-    public Map<String, Object> uploadImageFile(MultipartFile files, String folder, String publicId) {
+    public Map<String, Object> uploadImageFile(MultipartFile files, String folder, @Nullable String publicId) {
         System.out.println("Folder = " + folder);
         if (files.isEmpty())
             throw new IllegalArgumentException("File is empty");

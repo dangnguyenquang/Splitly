@@ -41,7 +41,6 @@ public class GroupInfoImpl implements IGroupInfo {
     private final GroupInfoMapper groupInfoMapper;
     private final PaymentRequestRepository paymentRequestRepository;
     private final UserDebtRepository userDebtRepository;
-
     @Override
     public List<GroupInfoResponse> getAllGroup() {
         List<GroupInfo> groupInfos = new ArrayList<>();
