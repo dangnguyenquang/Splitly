@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.example.splitly.domain.enumerator.PaymentRequestStatus;
 import com.example.splitly.domain.repository.*;
 import org.springframework.stereotype.Service;
 
+import com.example.splitly.presentation.dto.request.CreateGroupRequest;
 import com.example.splitly.presentation.dto.request.GroupDTO;
 import com.example.splitly.presentation.dto.response.GroupInfoResponse;
 import com.example.splitly.application.mapper.GroupInfoMapper;
@@ -25,7 +27,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +41,6 @@ public class GroupInfoImpl implements IGroupInfo {
     private final GroupInfoMapper groupInfoMapper;
     private final PaymentRequestRepository paymentRequestRepository;
     private final UserDebtRepository userDebtRepository;
-    private final ImageCloudinaryService imageCloudinaryService;
 
     @Override
     public List<GroupInfoResponse> getAllGroup() {
@@ -50,14 +50,17 @@ public class GroupInfoImpl implements IGroupInfo {
     }
 
     @Override
-    public GroupInfoResponse createGroup(String groupName, List<String> emailList) {
+    public GroupInfoResponse createGroup(CreateGroupRequest request) {
         User user = iUserService.getCurrentUser();
-        if (emailList.contains(user.getEmail())) {
+        if (request.getEmailList().contains(user.getEmail())) {
             throw new IllegalArgumentException("You cannot invite your own email");
         }
         GroupInfo groupInfo = GroupInfo.builder()
                 .numberOfMember(100)
-                .groupName(groupName)
+                .groupName(request.getGroupName())
+                .descriptions(request.getDescriptions())
+                .currency(request.getCurrency())
+                .category(request.getCategory())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -75,8 +78,8 @@ public class GroupInfoImpl implements IGroupInfo {
                 .status(InvitationStatus.SUCCESS)
                 .build();
         groupUserRepository.save(groupUser);
-        if (!emailList.isEmpty()) {
-            for (String email : emailList) {
+        if (!request.getEmailList().isEmpty()) {
+            for (String email : request.getEmailList()) {
                 iGroupUser.inviteUserToGroup(email, groupInfo.getGroupId());
             }
         }
@@ -86,14 +89,20 @@ public class GroupInfoImpl implements IGroupInfo {
     @Override
     public GroupInfoResponse updateGroup(Long groupId, GroupDTO groupDTO) {
         User user = iUserService.getCurrentUser();
+
         GroupInfo groupInfo = findGroupInfo(groupId);
-        if (groupInfo.getUser().getUserId() == user.getUserId()) {
-            groupInfo.setGroupName(groupDTO.getGroupName());
-            groupInfo.setNumberOfMember(groupDTO.getNumberOfMember());
-            groupInfo.setUpdatedAt(LocalDateTime.now());
-            groupInfoRepository.save((groupInfo));
-        } else {
-            throw new IllegalArgumentException("User is not a leader");
+        if (groupInfo != null) {
+            if (groupInfo.getUser().getUserId() == user.getUserId()) {
+                groupInfo.setGroupName(groupDTO.getGroupName());
+                groupInfo.setNumberOfMember(groupDTO.getNumberOfMember());
+                groupInfo.setDescriptions(groupDTO.getDescriptions());
+                groupInfo.setCurrency(groupDTO.getCurrency());
+                groupInfo.setCategory(groupDTO.getCategory());
+                groupInfo.setUpdatedAt(LocalDateTime.now());
+                groupInfoRepository.save((groupInfo));
+            } else {
+                throw new IllegalArgumentException("User is not a leader");
+            }
         }
         return groupInfoMapper.toGroupInfoResponse(groupInfo);
     }
@@ -114,23 +123,33 @@ public class GroupInfoImpl implements IGroupInfo {
     }
 
     @Override
-    public GroupInfoResponse findGroupInfoResponse(Long groupId) {
-        return groupInfoMapper.toGroupInfoResponse(groupInfoRepository.findById(groupId)
-                .orElseThrow(() -> new EntityNotFoundException("Group not found!")));
+    public Optional<GroupInfoResponse> findGroupInfoResponse(Long groupId) {
+        if (groupId == null) {
+            throw new IllegalArgumentException("Id invalid");
+        }
+
+        return groupInfoRepository.findById(groupId)
+                .map(groupInfoMapper::toGroupInfoResponse);
 
     }
 
     @Override
     public GroupInfo findGroupInfo(Long groupId) {
+        if (groupId == null) {
+            throw new IllegalArgumentException("Id invalid");
+        }
         return groupInfoRepository.findById(groupId)
-                .orElseThrow(() -> new EntityNotFoundException("Group not found!"));
+                .orElse(null);
 
     }
 
     @Override
     public User findLeader(Long groupId) {
+        if (groupId == null) {
+            throw new IllegalArgumentException("Id invalid");
+        }
         return groupInfoRepository.findById(groupId)
-                .orElseThrow(() -> new EntityNotFoundException("Group not found!")).getUser();
+                .orElseThrow(null).getUser();
 
     }
 
@@ -161,21 +180,13 @@ public class GroupInfoImpl implements IGroupInfo {
                 .existsByGroupInfo_GroupIdAndUser_UserIdAndStatusNot(groupId, user.getUserId(),
                         PaymentRequestStatus.SUCCESS)
                 && userDebtRepository
-                .existsByGroupInfo_GroupIdAndStatusAndCreditor_UserIdOrGroupInfo_GroupIdAndStatusAndDebtor_UserId(
-                        groupId, false, user.getUserId(), groupId, false, user.getUserId())) {
+                        .existsByGroupInfo_GroupIdAndStatusAndCreditor_UserIdOrGroupInfo_GroupIdAndStatusAndDebtor_UserId(
+                                groupId, false, user.getUserId(), groupId, false, user.getUserId())) {
             groupUser.setStatus(InvitationStatus.FAILED);
         } else {
             throw new IllegalStateException("Not enough conditions to quit group");
         }
     }
 
-    @Override
-    public void uploadGroupAvatar(MultipartFile file, Long groupId) {
-        GroupInfo groupInfo = findGroupInfo(groupId);
-        String folder = "group/" + groupId;
-        Map<String, Object> uploadResult = imageCloudinaryService.uploadImageFile(file, folder);
-        groupInfo.setGroupImage((String) uploadResult.get("secure_url"));
-        groupInfo.setImagePublicId((String) uploadResult.get("public_id"));
-        groupInfoRepository.save(groupInfo);
-    }
+
 }

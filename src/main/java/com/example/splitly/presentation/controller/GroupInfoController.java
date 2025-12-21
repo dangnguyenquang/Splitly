@@ -36,17 +36,16 @@ public class GroupInfoController {
         return ResponseEntity.ok(responseData);
     }
 
-    @GetMapping("/all/{groupId}")
+    @GetMapping("/{groupId}")
     public ResponseEntity<ResponseData<?>> getGroupById(@PathVariable Long groupId) {
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Get all groups successfully!",
-                interfaceGroupInfo.findGroupInfoResponse(groupId));
+                interfaceGroupInfo.findGroupInfoResponse(groupId).orElseGet(GroupInfoResponse::new));
         return ResponseEntity.ok(responseData);
     }
 
     @PostMapping("/create-group")
     public ResponseEntity<ResponseData<?>> createGroupInfo(@Valid @RequestBody CreateGroupRequest createGroupRequest) {
-        GroupInfoResponse groupInfo = interfaceGroupInfo.createGroup(createGroupRequest.getGroupName(),
-                createGroupRequest.getEmailList());
+        GroupInfoResponse groupInfo = interfaceGroupInfo.createGroup(createGroupRequest);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Create group successfully!",
                 groupInfo);
         return ResponseEntity.ok(responseData);
@@ -74,13 +73,6 @@ public class GroupInfoController {
 
         interfaceGroupInfo.assignLeader(groupId, userId);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Assign leader successfully!");
-        return ResponseEntity.ok(responseData);
-    }
-
-    @PostMapping("/upload-avatar/{groupId}")
-    public ResponseEntity<ResponseData<?>> uploadAvatarGroup (@PathVariable Long groupId, @RequestParam("file") MultipartFile file) {
-        interfaceGroupInfo.uploadGroupAvatar(file, groupId);
-        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!");
         return ResponseEntity.ok(responseData);
     }
 }

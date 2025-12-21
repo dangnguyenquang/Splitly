@@ -59,3 +59,5 @@ replay_pid*
 # Environment files
 .env
 .env.*
+
+splitly-820ac-firebase-adminsdk-fbsvc-a618324250.json

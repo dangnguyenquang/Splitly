@@ -1,10 +1,9 @@
 package com.example.splitly.presentation.dto.request;
 
-import com.example.splitly.domain.entity.Role;
 import com.example.splitly.domain.enumerator.Gender;
-import com.example.splitly.presentation.dto.response.RoleResponse;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +23,7 @@ public class UserRequest implements Serializable {
     @NotBlank(message = "Email can't be blank")
     private String email;
 
-    @NotBlank(message = "Gender can't be blank")
+    @NotNull(message = "Gender is required")
     private Gender gender;
 
     private Set<String> roles;
