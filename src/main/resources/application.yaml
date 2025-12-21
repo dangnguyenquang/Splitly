@@ -1,8 +1,9 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/splitly_db
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    # url: jdbc:postgresql://localhost:5432/splitly_db
+    url: jdbc:postgresql://localhost:5433/splitly_db #Loc 
+    username: splitly
+    password: password
     driver-class-name: org.postgresql.Driver
 
   servlet:
