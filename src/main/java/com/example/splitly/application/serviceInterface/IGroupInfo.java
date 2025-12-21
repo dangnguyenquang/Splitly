@@ -30,6 +30,4 @@ public interface IGroupInfo {
 
     @Transactional
     void handleQuitGroup(Long groupId);
-
-    void uploadGroupAvatar(MultipartFile file, Long groupId);
 }

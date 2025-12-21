@@ -5,6 +5,8 @@ CREATE TABLE app_user (
   phone VARCHAR(10),
   email VARCHAR(50),
   gender TEXT,
+  user_image VARCHAR(255),
+  image_public_id VARCHAR(255),
   password VARCHAR(255),
   is_verified BOOLEAN NOT NULL DEFAULT false,
   otp VARCHAR(10),

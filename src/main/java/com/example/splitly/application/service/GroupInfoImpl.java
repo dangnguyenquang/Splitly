@@ -27,7 +27,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +41,6 @@ public class GroupInfoImpl implements IGroupInfo {
     private final GroupInfoMapper groupInfoMapper;
     private final PaymentRequestRepository paymentRequestRepository;
     private final UserDebtRepository userDebtRepository;
-    private final ImageCloudinaryService imageCloudinaryService;
 
     @Override
     public List<GroupInfoResponse> getAllGroup() {
@@ -190,13 +188,5 @@ public class GroupInfoImpl implements IGroupInfo {
         }
     }
 
-    @Override
-    public void uploadGroupAvatar(MultipartFile file, Long groupId) {
-        GroupInfo groupInfo = findGroupInfo(groupId);
-        String folder = "group/" + groupId;
-        Map<String, Object> uploadResult = imageCloudinaryService.uploadImageFile(file, folder);
-        groupInfo.setGroupImage((String) uploadResult.get("secure_url"));
-        groupInfo.setImagePublicId((String) uploadResult.get("public_id"));
-        groupInfoRepository.save(groupInfo);
-    }
+
 }
