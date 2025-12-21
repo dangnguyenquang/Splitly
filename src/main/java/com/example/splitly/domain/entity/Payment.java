@@ -17,10 +17,11 @@ import java.util.Set;
 @Entity
 @Table(name = "payment_request")
 public class Payment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
-    private int paymentId;
+    private Integer paymentId;
 
     @Column(name = "title")
     private String title;
@@ -43,15 +44,19 @@ public class Payment {
     @OneToMany(mappedBy = "payment")
     private Set<ConsensusPayment> consensusPayments = new HashSet<>();
 
+    @OneToMany(
+            mappedBy = "payment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<PaymentImage> images = new HashSet<>();
+
     @Column(name = "estimated_amount")
     private double estimatedAmount;
 
-    @Column(name = "status")
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private PaymentRequestStatus status;
-
-    @Column(name = "image_url")
-    private String imageUrl;
 
     @Column(name = "payment_request_note")
     private String paymentRequestNote;

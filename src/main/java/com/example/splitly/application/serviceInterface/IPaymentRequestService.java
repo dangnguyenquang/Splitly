@@ -1,15 +1,20 @@
 package com.example.splitly.application.serviceInterface;
 
 import com.example.splitly.domain.entity.Payment;
+import com.example.splitly.domain.enumerator.PaymentImageType;
 import com.example.splitly.domain.enumerator.PaymentRequestStatus;
 import com.example.splitly.presentation.dto.request.PaymentRequest;
 import com.example.splitly.presentation.dto.request.UpdateStatusProcessPaymentRequest;
 import com.example.splitly.presentation.dto.request.UpdateStatusSuccessPaymentRequest;
+import com.example.splitly.presentation.dto.response.PaymentImageResponse;
 import com.example.splitly.presentation.dto.response.PaymentResponse;
 import com.example.splitly.presentation.dto.response.UpdateStatusProcessPaymentResponse;
 import com.example.splitly.presentation.dto.response.UpdateStatusSuccessPaymentResponse;
 import io.micrometer.common.lang.Nullable;
+import jakarta.transaction.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 public interface IPaymentRequestService {
@@ -42,4 +47,11 @@ public interface IPaymentRequestService {
     public Payment validatePaymentRequest(Integer paymentId, Set<PaymentRequestStatus> expectedStatus, @Nullable Object payload, @Nullable String payloadName);
 
     public void changeStatusPaymentRequestToSuccess(Integer paymentId);
+
+    @Transactional
+    List<PaymentImageResponse> uploadPaymentRequestImages(
+            List<MultipartFile> files,
+            Integer paymentId,
+            PaymentImageType imageType
+    );
 }

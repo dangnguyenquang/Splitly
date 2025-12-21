@@ -25,7 +25,7 @@ public class PaymentRequest implements Serializable {
     @Min(value = 0, message = "Estimated amount can't lower than 0")
     private double estimatedAmount = 0.0;
 
-    private String imageUrl;
+    private Set<PaymentImageRequest> images;
 
     private String paymentRequestNote;
 

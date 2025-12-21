@@ -30,7 +30,9 @@ public class PaymentResponse implements Serializable {
 
     private PaymentRequestStatus status;
 
-    private String imageUrl;
+    private Set<PaymentImageResponse> billImages;
+
+    private Set<PaymentImageResponse> productImages;
 
     private String paymentRequestNote;
 
