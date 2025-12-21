@@ -1,17 +1,21 @@
 package com.example.splitly.application.service;
 
 import com.example.splitly.application.mapper.ItemMapper;
+import com.example.splitly.application.mapper.PaymentImageMapper;
 import com.example.splitly.application.mapper.PaymentRequestMapper;
 import com.example.splitly.application.mapper.TagMapper;
 import com.example.splitly.application.serviceInterface.*;
 import com.example.splitly.domain.entity.*;
+import com.example.splitly.domain.enumerator.PaymentImageType;
 import com.example.splitly.domain.enumerator.PaymentRequestStatus;
 import com.example.splitly.domain.repository.ConsensusRepository;
+import com.example.splitly.domain.repository.PaymentImageRepository;
 import com.example.splitly.domain.repository.PaymentRequestRepository;
 import com.example.splitly.domain.repository.UserDebtRepository;
 import com.example.splitly.presentation.dto.request.*;
 import com.example.splitly.presentation.dto.response.*;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -41,6 +45,8 @@ public class PaymentRequestService implements IPaymentRequestService {
     private final IGroupUser groupUser;
     private final IGroupInfo groupInfo;
     private final ImageCloudinaryService imageCloudinaryService;
+    private final PaymentImageRepository paymentImageRepository;
+    private final PaymentImageMapper paymentImageMapper;
 
     @Override
     public PaymentResponse create(PaymentRequest paymentRequest, Long groupId) {
@@ -395,14 +401,44 @@ public class PaymentRequestService implements IPaymentRequestService {
         existingPayment.setStatus(PaymentRequestStatus.SUCCESS);
     }
 
+    @Transactional
     @Override
-    public void uploadPaymentRequestImage(MultipartFile file, Integer paymentId) {
-        Payment payment = paymentRequestRepository.getByPaymentId(paymentId);
+    public List<PaymentImageResponse> uploadPaymentRequestImages(
+            List<MultipartFile> files,
+            Integer paymentId,
+            PaymentImageType imageType
+    ) {
+        Payment payment = paymentRequestRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Payment not found"));
 
-        String folder = "payment-request/" + paymentId;
-        Map<String, Object> uploadResult = imageCloudinaryService.uploadImageFile(file, folder);
-        payment.setImageUrl((String) uploadResult.get("secure_url"));
-        payment.setImagePublicId((String) uploadResult.get("public_id"));
-        paymentRequestRepository.save(payment);
+        if (files == null || files.isEmpty()) {
+            throw new IllegalArgumentException("Image list is empty");
+        }
+
+        return files.stream()
+                .map(file -> uploadAndSaveImage(file, payment, imageType))
+                .toList();
+    }
+
+    private PaymentImageResponse uploadAndSaveImage(
+            MultipartFile file,
+            Payment payment,
+            PaymentImageType imageType
+    ) {
+        Map<String, Object> uploadResult =
+                imageCloudinaryService.uploadImageFile(file, "payments/" + payment.getPaymentId());
+
+        String imageUrl = (String) uploadResult.get("secure_url");
+        String publicId = (String) uploadResult.get("public_id");
+
+        PaymentImage image = new PaymentImage();
+        image.setPayment(payment);
+        image.setImageUrl(imageUrl);
+        image.setImagePublicId(publicId);
+        image.setImageType(imageType);
+
+        paymentImageRepository.save(image);
+
+        return paymentImageMapper.toResponse(image);
     }
 }

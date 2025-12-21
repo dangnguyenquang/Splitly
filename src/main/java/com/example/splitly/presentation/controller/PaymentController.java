@@ -1,9 +1,11 @@
 package com.example.splitly.presentation.controller;
 
 import com.example.splitly.application.serviceInterface.IPaymentRequestService;
+import com.example.splitly.domain.enumerator.PaymentImageType;
 import com.example.splitly.presentation.dto.request.PaymentRequest;
 import com.example.splitly.presentation.dto.request.UpdateStatusProcessPaymentRequest;
 import com.example.splitly.presentation.dto.request.UpdateStatusSuccessPaymentRequest;
+import com.example.splitly.presentation.dto.response.PaymentImageResponse;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/payment-request")
@@ -103,10 +107,17 @@ public class PaymentController {
         return new ResponseData<>(HttpStatus.OK.value(), "Updated consensus payment request", response);
     }
 
-    @PostMapping("/{id}/payment-image")
-    public ResponseEntity<ResponseData<?>> uploadPaymentImage(@PathVariable Integer id, @RequestParam("image") MultipartFile file) {
-        paymentRequestService.uploadPaymentRequestImage(file, id);
-        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!");
-        return ResponseEntity.ok(responseData);
+    @PostMapping("/payments/{id}/images")
+    public ResponseEntity<ResponseData<List<PaymentImageResponse>>> uploadPaymentImages(
+            @PathVariable Integer id,
+            @RequestParam("images") List<MultipartFile> files,
+            @RequestParam PaymentImageType type
+    ) {
+        var responses =
+                paymentRequestService.uploadPaymentRequestImages(files, id, type);
+
+        return ResponseEntity.ok(
+                new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!", responses)
+        );
     }
 }

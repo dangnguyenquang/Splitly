@@ -1,11 +1,15 @@
 package com.example.splitly.presentation.dto.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,10 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 public class BillOcrRequest {
 
-    @NotNull(message = "Bill image is required")
-    private MultipartFile image;
+    @NotEmpty(message = "At least one bill image is required")
+    @Size(max = 10, message = "Maximum 10 images allowed per request")
+    private List<MultipartFile> images;
 
-    private Integer paymentId;
-
-    private String additionalContext; // Optional: restaurant name, date, etc.
+    private String additionalContext;
 }

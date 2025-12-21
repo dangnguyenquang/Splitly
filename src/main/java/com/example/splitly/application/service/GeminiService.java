@@ -32,15 +32,24 @@ public class GeminiService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Extract bill information from single image
+     */
     public BillOcrResponse extractBillInformation(MultipartFile image, String additionalContext) {
-        try {
-            // Convert image to base64
-            String base64Image = Base64.getEncoder().encodeToString(image.getBytes());
-            String mimeType = image.getContentType();
+        return extractBillInformationFromMultipleImages(Collections.singletonList(image), additionalContext);
+    }
 
-            // Prepare request to Gemini
-            String prompt = buildPrompt(additionalContext);
-            Map<String, Object> requestBody = buildGeminiRequest(prompt, base64Image, mimeType);
+    /**
+     * Extract bill information from multiple images of the SAME bill
+     * All images are analyzed together to produce ONE complete bill
+     */
+    public BillOcrResponse extractBillInformationFromMultipleImages(
+            List<MultipartFile> images,
+            String additionalContext) {
+        try {
+            // Prepare request with multiple images
+            String prompt = buildMultiImagePrompt(additionalContext, images.size());
+            Map<String, Object> requestBody = buildGeminiRequestWithMultipleImages(prompt, images);
 
             // Call Gemini API
             HttpHeaders headers = new HttpHeaders();
@@ -49,7 +58,7 @@ public class GeminiService {
             String url = geminiApiUrl + "?key=" + geminiApiKey;
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-            log.info("Sending bill image to Gemini API for OCR processing");
+            log.info("Sending {} bill images to Gemini API for combined OCR processing", images.size());
             ResponseEntity<String> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
@@ -61,14 +70,23 @@ public class GeminiService {
             return parseGeminiResponse(response.getBody());
 
         } catch (Exception e) {
-            log.error("Error processing bill image with Gemini: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to process bill image: " + e.getMessage());
+            log.error("Error processing bill images with Gemini: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to process bill images: " + e.getMessage());
         }
     }
 
-    private String buildPrompt(String additionalContext) {
+    private String buildMultiImagePrompt(String additionalContext, int imageCount) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Extract all information from this bill/receipt image and return ONLY a valid JSON object with the following structure:\n\n");
+
+        if (imageCount > 1) {
+            prompt.append("You are analyzing ").append(imageCount)
+                    .append(" images of the SAME bill/receipt. ");
+            prompt.append("These images may show different parts of one long bill, or multiple angles of the same bill. ");
+            prompt.append("Combine ALL information from ALL images into ONE complete bill. ");
+            prompt.append("Do not duplicate items - if you see the same item in multiple images, include it only once.\n\n");
+        }
+
+        prompt.append("Extract all information from this bill/receipt and return ONLY a valid JSON object with the following structure:\n\n");
         prompt.append("{\n");
         prompt.append("  \"merchantName\": \"string\",\n");
         prompt.append("  \"merchantAddress\": \"string\",\n");
@@ -99,10 +117,12 @@ public class GeminiService {
         prompt.append("- Return ONLY the JSON object, no markdown formatting, no explanations\n");
         prompt.append("- Use null for missing fields\n");
         prompt.append("- Parse dates carefully (common formats: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD)\n");
-        prompt.append("- Extract all items with their quantities and prices\n");
-        prompt.append("- Calculate totals if not explicitly shown\n");
+        prompt.append("- Extract ALL items from ALL images without duplication\n");
+        prompt.append("- Combine partial information from multiple images intelligently\n");
+        prompt.append("- If multiple images show different sections, merge them into one complete list\n");
+        prompt.append("- Calculate totals based on all items found\n");
         prompt.append("- Include tax, service charges, discounts if present\n");
-        prompt.append("- Set confidence based on image quality and text clarity\n");
+        prompt.append("- Set confidence based on overall image quality and consistency across images\n");
 
         if (additionalContext != null && !additionalContext.trim().isEmpty()) {
             prompt.append("\nAdditional context: ").append(additionalContext);
@@ -111,7 +131,10 @@ public class GeminiService {
         return prompt.toString();
     }
 
-    private Map<String, Object> buildGeminiRequest(String prompt, String base64Image, String mimeType) {
+    private Map<String, Object> buildGeminiRequestWithMultipleImages(
+            String prompt,
+            List<MultipartFile> images) throws Exception {
+
         Map<String, Object> request = new HashMap<>();
 
         List<Map<String, Object>> contents = new ArrayList<>();
@@ -119,18 +142,23 @@ public class GeminiService {
 
         List<Map<String, Object>> parts = new ArrayList<>();
 
-        // Add text part
+        // Add text part first
         Map<String, Object> textPart = new HashMap<>();
         textPart.put("text", prompt);
         parts.add(textPart);
 
-        // Add image part
-        Map<String, Object> imagePart = new HashMap<>();
-        Map<String, Object> inlineData = new HashMap<>();
-        inlineData.put("mimeType", mimeType);
-        inlineData.put("data", base64Image);
-        imagePart.put("inline_data", inlineData);
-        parts.add(imagePart);
+        // Add all image parts
+        for (MultipartFile image : images) {
+            String base64Image = Base64.getEncoder().encodeToString(image.getBytes());
+            String mimeType = image.getContentType();
+
+            Map<String, Object> imagePart = new HashMap<>();
+            Map<String, Object> inlineData = new HashMap<>();
+            inlineData.put("mimeType", mimeType);
+            inlineData.put("data", base64Image);
+            imagePart.put("inline_data", inlineData);
+            parts.add(imagePart);
+        }
 
         content.put("parts", parts);
         contents.add(content);
@@ -140,7 +168,7 @@ public class GeminiService {
         // Add generation config
         Map<String, Object> generationConfig = new HashMap<>();
         generationConfig.put("temperature", 0.1);
-        generationConfig.put("maxOutputTokens", 4096); // Increased to prevent truncation
+        generationConfig.put("maxOutputTokens", 8192); // Increased for multiple images
         generationConfig.put("topP", 0.95);
         generationConfig.put("topK", 40);
         request.put("generationConfig", generationConfig);

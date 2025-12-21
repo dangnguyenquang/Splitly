@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/bills")
 @RequiredArgsConstructor
@@ -17,29 +19,24 @@ public class BillOcrController {
 
     private final BillOcrService billOcrService;
 
-    /**
-     * Process bill image and extract information using Gemini AI
-     *
-     * @param image             Bill/receipt image file
-     * @param additionalContext Optional context (e.g., restaurant name, date)
-     * @return Extracted bill information in JSON format
-     */
     @PostMapping(value = "/ocr", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseData<BillOcrResponse> processBillImage(
-            @RequestParam("image") MultipartFile image,
-            @RequestParam("paymentId") Integer paymentId,
+            @RequestParam("images") List<MultipartFile> images,
             @RequestParam(value = "additionalContext", required = false) String additionalContext) {
 
         BillOcrRequest request = new BillOcrRequest();
-        request.setImage(image);
+        request.setImages(images);
         request.setAdditionalContext(additionalContext);
-        request.setPaymentId(paymentId);
 
         BillOcrResponse response = billOcrService.processBillImage(request);
 
+        String message = images.size() == 1
+                ? "Bill processed successfully"
+                : String.format("Bill processed successfully from %d images", images.size());
+
         return new ResponseData<>(
                 HttpStatus.OK.value(),
-                "Bill processed successfully",
+                message,
                 response
         );
     }
