@@ -426,7 +426,7 @@ public class PaymentRequestService implements IPaymentRequestService {
             PaymentImageType imageType
     ) {
         Map<String, Object> uploadResult =
-                imageCloudinaryService.uploadImageFile(file, "payments/" + payment.getPaymentId());
+                imageCloudinaryService.uploadImageFile(file, "payments/" + payment.getPaymentId(), null);
 
         String imageUrl = (String) uploadResult.get("secure_url");
         String publicId = (String) uploadResult.get("public_id");
