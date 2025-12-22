@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.splitly.application.serviceInterface.IGroupInfo;
-import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.presentation.dto.request.CreateGroupRequest;
 import com.example.splitly.presentation.dto.request.GroupDTO;
 import com.example.splitly.presentation.dto.response.GroupInfoResponse;
@@ -39,7 +38,7 @@ public class GroupInfoController {
     @GetMapping("/{groupId}")
     public ResponseEntity<ResponseData<?>> getGroupById(@PathVariable Long groupId) {
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Get all groups successfully!",
-                interfaceGroupInfo.findGroupInfoResponse(groupId).orElseGet(GroupInfoResponse::new));
+                interfaceGroupInfo.findGroupInfoResponse(groupId));
         return ResponseEntity.ok(responseData);
     }
 
@@ -73,6 +72,17 @@ public class GroupInfoController {
 
         interfaceGroupInfo.assignLeader(groupId, userId);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Assign leader successfully!");
+        return ResponseEntity.ok(responseData);
+    }
+
+
+    @PostMapping({ "/upload-avatar/{folderName}/{groupId}" })
+    public ResponseEntity<ResponseData<?>> uploadGroupAvatar(
+            @PathVariable String folderName,
+            @PathVariable(required = true) Long groupId,
+            @RequestParam("file") MultipartFile file) {
+        String url = interfaceGroupInfo.uploadGroupImage(file, groupId, folderName);
+        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!", url);
         return ResponseEntity.ok(responseData);
     }
 }

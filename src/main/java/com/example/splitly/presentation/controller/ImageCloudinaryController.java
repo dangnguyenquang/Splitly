@@ -22,25 +22,6 @@ public class ImageCloudinaryController {
 
     public final ImageCloudinaryService iCloudinaryService;
 
-    @PostMapping({ "/upload-avatar/{folderName}/{groupId}" })
-    public ResponseEntity<ResponseData<?>> uploadGroupAvatar(
-            @PathVariable String folderName,
-            @PathVariable(required = true) Long groupId,
-            @RequestParam("file") MultipartFile file) {
-        iCloudinaryService.uploadGroupImage(file, groupId, folderName);
-        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!");
-        return ResponseEntity.ok(responseData);
-    }
-
-    @PostMapping({ "/upload-avatar/{folderName}" })
-    public ResponseEntity<ResponseData<?>> uploadAvatarUser(
-            @PathVariable String folderName,
-            @RequestParam("file") MultipartFile file) {
-        iCloudinaryService.uploadUserAvatar(file, folderName);
-        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!");
-        return ResponseEntity.ok(responseData);
-    }
-
     @DeleteMapping("/remove/{folderName}/{publicId}")
     public ResponseEntity<ResponseData<?>> removeImage(@PathVariable String folderName, @PathVariable String publicId) {
         iCloudinaryService.deleteImage(publicId);

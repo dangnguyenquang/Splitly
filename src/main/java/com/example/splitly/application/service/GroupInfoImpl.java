@@ -8,6 +8,9 @@ import java.util.Optional;
 
 import com.example.splitly.domain.enumerator.PaymentRequestStatus;
 import com.example.splitly.domain.repository.*;
+import com.example.splitly.exception.ResourceNotFoundException;
+
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.example.splitly.presentation.dto.request.CreateGroupRequest;
@@ -16,6 +19,7 @@ import com.example.splitly.presentation.dto.response.GroupInfoResponse;
 import com.example.splitly.application.mapper.GroupInfoMapper;
 import com.example.splitly.application.serviceInterface.IGroupInfo;
 import com.example.splitly.application.serviceInterface.IGroupUser;
+import com.example.splitly.application.serviceInterface.IImageCloudinaryService;
 import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.domain.entity.GroupUser;
@@ -27,6 +31,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +46,8 @@ public class GroupInfoImpl implements IGroupInfo {
     private final GroupInfoMapper groupInfoMapper;
     private final PaymentRequestRepository paymentRequestRepository;
     private final UserDebtRepository userDebtRepository;
+    private final IImageCloudinaryService iImageCloudinaryService;
+
     @Override
     public List<GroupInfoResponse> getAllGroup() {
         List<GroupInfo> groupInfos = new ArrayList<>();
@@ -122,13 +129,14 @@ public class GroupInfoImpl implements IGroupInfo {
     }
 
     @Override
-    public Optional<GroupInfoResponse> findGroupInfoResponse(Long groupId) {
+    public GroupInfoResponse findGroupInfoResponse(Long groupId) {
         if (groupId == null) {
             throw new IllegalArgumentException("Id invalid");
         }
 
         return groupInfoRepository.findById(groupId)
-                .map(groupInfoMapper::toGroupInfoResponse);
+                .map(groupInfoMapper::toGroupInfoResponse)
+                .orElseThrow(() -> new EntityNotFoundException("Group not found!"));
 
     }
 
@@ -138,7 +146,7 @@ public class GroupInfoImpl implements IGroupInfo {
             throw new IllegalArgumentException("Id invalid");
         }
         return groupInfoRepository.findById(groupId)
-                .orElse(null);
+                .orElseThrow(() -> new EntityNotFoundException("Group not found!"));
 
     }
 
@@ -147,8 +155,9 @@ public class GroupInfoImpl implements IGroupInfo {
         if (groupId == null) {
             throw new IllegalArgumentException("Id invalid");
         }
-        return groupInfoRepository.findById(groupId)
-                .orElseThrow(null).getUser();
+        GroupInfo group = findGroupInfo(groupId);
+
+        return group.getUser();
 
     }
 
@@ -187,5 +196,24 @@ public class GroupInfoImpl implements IGroupInfo {
         }
     }
 
+    @Override
+    public String uploadGroupImage(MultipartFile file, Long groupId, String folderName) {
+        User user = iUserService.getCurrentUser();
+        if (user == null)
+            throw new AccessDeniedException("Not logged in.");
+        if (!folderName.equals("groups")) {
+            throw new IllegalArgumentException("Invalid folder name: " + folderName);
+        }
+        GroupInfo groupInfo = findGroupInfo(groupId);
+        String folder = folderName + "/" + groupId;
+        String existingPublicId = groupInfo.getImagePublicId();
+
+        Map<String, Object> uploadResult = iImageCloudinaryService.uploadImageFile(file, folder, existingPublicId);
+        groupInfo.setGroupImage((String) uploadResult.get("secure_url"));
+        groupInfo.setImagePublicId((String) uploadResult.get("public_id"));
+        groupInfoRepository.save(groupInfo);
+
+        return groupInfo.getGroupImage();
+    }
 
 }
