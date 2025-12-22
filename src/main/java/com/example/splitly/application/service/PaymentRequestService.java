@@ -401,6 +401,25 @@ public class PaymentRequestService implements IPaymentRequestService {
         existingPayment.setStatus(PaymentRequestStatus.SUCCESS);
     }
 
+//    @Transactional
+//    @Override
+//    public List<PaymentImageResponse> uploadPaymentRequestImages(
+//            List<MultipartFile> files,
+//            Integer paymentId,
+//            PaymentImageType imageType
+//    ) {
+//        Payment payment = paymentRequestRepository.findById(paymentId)
+//                .orElseThrow(() -> new RuntimeException("Payment not found"));
+//
+//        if (files == null || files.isEmpty()) {
+//            throw new IllegalArgumentException("Image list is empty");
+//        }
+//
+//        return files.stream()
+//                .map(file -> uploadAndSaveImage(file, payment, imageType))
+//                .toList();
+//    }
+
     @Transactional
     @Override
     public List<PaymentImageResponse> uploadPaymentRequestImages(
@@ -415,30 +434,44 @@ public class PaymentRequestService implements IPaymentRequestService {
             throw new IllegalArgumentException("Image list is empty");
         }
 
-        return files.stream()
-                .map(file -> uploadAndSaveImage(file, payment, imageType))
-                .toList();
-    }
+        List<PaymentImage> existingImages =
+                paymentImageRepository.findByPaymentAndImageTypeOrderByImageIdAsc(
+                        payment, imageType
+                );
 
-    private PaymentImageResponse uploadAndSaveImage(
-            MultipartFile file,
-            Payment payment,
-            PaymentImageType imageType
-    ) {
-        Map<String, Object> uploadResult =
-                imageCloudinaryService.uploadImageFile(file, "payments/" + payment.getPaymentId(), null);
+        List<PaymentImageResponse> responses = new ArrayList<>();
 
-        String imageUrl = (String) uploadResult.get("secure_url");
-        String publicId = (String) uploadResult.get("public_id");
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
 
-        PaymentImage image = new PaymentImage();
-        image.setPayment(payment);
-        image.setImageUrl(imageUrl);
-        image.setImagePublicId(publicId);
-        image.setImageType(imageType);
+            PaymentImage image;
+            String publicId;
 
-        paymentImageRepository.save(image);
+            if (i < existingImages.size()) {
+                image = existingImages.get(i);
+                publicId = image.getImagePublicId();
+            } else {
+                image = new PaymentImage();
+                image.setPayment(payment);
+                image.setImageType(imageType);
 
-        return paymentImageMapper.toResponse(image);
+                publicId = null;
+            }
+
+            Map<String, Object> uploadResult =
+                    imageCloudinaryService.uploadImageFile(
+                            file,
+                            "payments/" + payment.getPaymentId(),
+                            publicId
+                    );
+
+            image.setImageUrl((String) uploadResult.get("secure_url"));
+            image.setImagePublicId((String) uploadResult.get("public_id"));
+
+            paymentImageRepository.save(image);
+            responses.add(paymentImageMapper.toResponse(image));
+        }
+
+        return responses;
     }
 }

@@ -1,3 +1,8 @@
+CREATE TYPE payment_image_type AS ENUM (
+    'BILL',
+    'PRODUCT'
+);
+
 -- Table: user
 CREATE TABLE app_user
 (
