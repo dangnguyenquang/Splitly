@@ -135,7 +135,7 @@ public class GroupUserImpl implements IGroupUser {
                 existing.setStatus(InvitationStatus.FAILED);
                 groupUserRepository.save(existing);
             } else {
-                throw new EntityNotFoundException("User is not a leader!");
+                throw new IllegalAccessError("User is not a leader!");
             }
 
         } else {
@@ -145,10 +145,10 @@ public class GroupUserImpl implements IGroupUser {
 
     @Override
     public List<UserResponse> getAllUserGroup(Long groupId) {
-        List<User> users = groupUserRepository.findUsersByGroupId(groupId);
-        if (users.isEmpty()) {
-            throw new EntityNotFoundException("Not found group!");
+        if (groupId == null) {
+            throw new IllegalArgumentException("Invalid ID!");
         }
+        List<User> users = groupUserRepository.findUsersByGroupId(groupId);
         return users.stream()
                 .map(userMapper::toUserResponse)
                 .toList();
@@ -158,11 +158,7 @@ public class GroupUserImpl implements IGroupUser {
     public List<GroupInfoResponse> getGroupsByUserId() {
         User user = iUserService.getCurrentUser();
         List<GroupInfo> groups = groupUserRepository.findAllGroupsByUserId(user.getUserId());
-        if (!groups.isEmpty()) {
-            return groupInfoMapper.toGroupInfoResponses(groups);
-        } else {
-            throw new EntityNotFoundException("Not found groups");
-        }
+        return groupInfoMapper.toGroupInfoResponses(groups);
     }
 
     @Transactional

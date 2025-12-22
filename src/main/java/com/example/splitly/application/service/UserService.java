@@ -1,6 +1,7 @@
 package com.example.splitly.application.service;
 
 import com.example.splitly.application.mapper.UserMapper;
+import com.example.splitly.application.serviceInterface.IImageCloudinaryService;
 import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.GroupUser;
 import com.example.splitly.domain.entity.GroupUserId;
@@ -16,12 +17,15 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,6 +38,7 @@ public class UserService implements IUserService {
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
     private final GroupUserRepository groupUserRepository;
+    private final IImageCloudinaryService iImageCloudinaryService;
 
     public List<UserResponse> getAll() {
         return userRepository.findAll()
@@ -176,6 +181,30 @@ public class UserService implements IUserService {
         return users.stream()
                 .map(userMapper::toUserResponse)
                 .toList();
+    }
+
+@Override
+        public String uploadUserAvatar(MultipartFile file, String folderName) {
+        User user = getCurrentUser();
+        if (user == null)
+            throw new AccessDeniedException("Not logged in.");
+
+        if (!folderName.equals("users")) {
+            throw new IllegalArgumentException("Invalid folder name: " + folderName);
+        }
+
+        String folder = folderName + "/" + user.getUserId();
+
+        String existingPublicId = user.getImagePublicId();
+
+        Map<String, Object> uploadResult = iImageCloudinaryService.uploadImageFile(file, folder, existingPublicId);
+
+        user.setUserImage((String) uploadResult.get("secure_url"));
+        user.setImagePublicId((String) uploadResult.get("public_id"));
+        userRepository.save(user);
+
+        return user.getUserImage();
+
     }
 
 }

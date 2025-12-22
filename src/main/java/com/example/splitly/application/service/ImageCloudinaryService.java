@@ -4,32 +4,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.example.splitly.application.serviceInterface.IGroupInfo;
-import com.example.splitly.application.serviceInterface.IUserService;
-import com.example.splitly.domain.entity.GroupInfo;
-import com.example.splitly.domain.entity.User;
-import com.example.splitly.domain.repository.GroupInfoRepository;
-import com.example.splitly.domain.repository.UserRepository;
-import com.google.api.gax.rpc.UnauthenticatedException;
+import com.example.splitly.application.serviceInterface.IImageCloudinaryService;
+
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ImageCloudinaryService {
+public class ImageCloudinaryService implements IImageCloudinaryService {
     public final Cloudinary cloudinary;
-    public final IGroupInfo iGroupInfo;
-    public final GroupInfoRepository groupInfoRepository;
-    public final IUserService iUserService;
-    public final UserRepository userRepository;
+
 
     public Map<String, Object> uploadImageFile(MultipartFile files, String folder, @Nullable String publicId) {
         System.out.println("Folder = " + folder);
@@ -77,44 +67,6 @@ public class ImageCloudinaryService {
             e.printStackTrace();
             throw new IllegalArgumentException("Failed to delete image", e);
         }
-    }
-
-    public void uploadGroupImage(MultipartFile file, Long groupId, String folderName) {
-        User user = iUserService.getCurrentUser();
-        if (user == null)
-            throw new AccessDeniedException("Not logged in.");
-        if (!folderName.equals("groups")) {
-            throw new IllegalArgumentException("Invalid folder name: " + folderName);
-        }
-        GroupInfo groupInfo = iGroupInfo.findGroupInfo(groupId);
-        String folder = folderName + "/" + groupId;
-        String existingPublicId = groupInfo.getImagePublicId();
-
-        Map<String, Object> uploadResult = uploadImageFile(file, folder, existingPublicId);
-        groupInfo.setGroupImage((String) uploadResult.get("secure_url"));
-        groupInfo.setImagePublicId((String) uploadResult.get("public_id"));
-        groupInfoRepository.save(groupInfo);
-    }
-
-    public void uploadUserAvatar(MultipartFile file, String folderName) {
-        User user = iUserService.getCurrentUser();
-        if (user == null)
-            throw new AccessDeniedException("Not logged in.");
-
-        if (!folderName.equals("users")) {
-            throw new IllegalArgumentException("Invalid folder name: " + folderName);
-        }
-
-        String folder = folderName + "/" + user.getUserId();
-
-        String existingPublicId = user.getImagePublicId();
-
-        Map<String, Object> uploadResult = uploadImageFile(file, folder, existingPublicId);
-
-        user.setUserImage((String) uploadResult.get("secure_url"));
-        user.setImagePublicId((String) uploadResult.get("public_id"));
-        userRepository.save(user);
-
     }
 
 }

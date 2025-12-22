@@ -11,9 +11,11 @@ import com.example.splitly.presentation.dto.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -60,7 +62,7 @@ public class UserController {
 
     @PatchMapping("/invitation/{groupId}")
     public ResponseData<?> invitationUserAccept(@PathVariable Long groupId,
-                                                @RequestParam boolean action) {
+            @RequestParam boolean action) {
         userService.handleInvitation(groupId, action);
         return new ResponseData<>(HttpStatus.OK.value(), "Handle Successfully");
     }
@@ -145,7 +147,7 @@ public class UserController {
     @PatchMapping("/connections/reject")
     public ResponseData<?> rejectConnection(
             @RequestParam Integer requestUserId) {
-        UserConnectionResponse connection = userConnectionService.changeConnectionStatus(requestUserId,false);
+        UserConnectionResponse connection = userConnectionService.changeConnectionStatus(requestUserId, false);
         return new ResponseData<>(HttpStatus.OK.value(), "Connection rejected", connection);
     }
 
@@ -165,8 +167,7 @@ public class UserController {
         return new ResponseData<>(
                 HttpStatus.OK.value(),
                 "Found " + users.size() + " users matching keyword",
-                users
-        );
+                users);
     }
 
     @GetMapping("/search/all")
@@ -175,7 +176,15 @@ public class UserController {
         return new ResponseData<>(
                 HttpStatus.OK.value(),
                 "Found " + users.size() + " users matching keyword",
-                users
-        );
+                users);
+    }
+
+    @PostMapping({ "/upload-avatar/{folderName}" })
+    public ResponseEntity<ResponseData<?>> uploadAvatarUser(
+            @PathVariable String folderName,
+            @RequestParam("file") MultipartFile file) {
+        String url =userService.uploadUserAvatar(file, folderName);
+        ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!", url);
+        return ResponseEntity.ok(responseData);
     }
 }

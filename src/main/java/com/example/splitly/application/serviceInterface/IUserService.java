@@ -8,6 +8,8 @@ import com.example.splitly.presentation.dto.response.UserResponse;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface IUserService {
     public List<UserResponse> getAll();
 
@@ -28,4 +30,6 @@ public interface IUserService {
     public User getCurrentUser();
 
     List<UserResponse> searchUsersByEmail(String keyword);
+
+    public String uploadUserAvatar(MultipartFile file, String folderName);
 }
