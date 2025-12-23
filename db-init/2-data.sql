@@ -1,11 +1,10 @@
 -- app_user
-INSERT INTO app_user (username, phone, email, gender, password, is_verified, reset_token, reset_token_expiry)
+INSERT INTO app_user (username, phone, email, gender, password, user_image, is_verified, reset_token, reset_token_expiry)
 VALUES ('alice', '0900000001', 'alice@example.com', 'FEMALE',
-        '$2a$10$Pp0lYRW.0aVEIAO.v0xXDOiK4fFWYbqBgVP1QXDQm4mx39y3GAXei', true, null, null),
-       ('bob', '0900000002', 'bob@example.com', 'MALE', '$2a$10$SetVOAy0B7CsOuE/061EUeOD1aK6DRWzb65cB/dQJm.JBisBkNoCG',
-        true, null, null),
+        '$2a$10$Pp0lYRW.0aVEIAO.v0xXDOiK4fFWYbqBgVP1QXDQm4mx39y3GAXei', "https://res.cloudinary.com/diyxertpi/image/upload/v1766500889/default-avatar-avif_ujmbe7.avif" , true, null, null),
+       ('bob', '0900000002', 'bob@example.com', 'MALE', '$2a$10$SetVOAy0B7CsOuE/061EUeOD1aK6DRWzb65cB/dQJm.JBisBkNoCG', "https://res.cloudinary.com/diyxertpi/image/upload/v1766500889/default-avatar-avif_ujmbe7.avif",        true, null, null),
        ('carol', '0900000003', 'carol@example.com', 'FEMALE',
-        '$2a$10$3EqxkuW2M0wVNBdsHMfU0OKAo0Oh9zSnjPPZYzkvGer8Rq/1StcXa', true, null, null);
+        '$2a$10$3EqxkuW2M0wVNBdsHMfU0OKAo0Oh9zSnjPPZYzkvGer8Rq/1StcXa', "https://res.cloudinary.com/diyxertpi/image/upload/v1766500889/default-avatar-avif_ujmbe7.avif", true, null, null);
 
 -- user_connection
 INSERT INTO user_connection (request_user_id,
