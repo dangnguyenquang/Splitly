@@ -17,5 +17,6 @@ public interface AuthMapper {
     @Mapping(target = "phone", source = "user.phone")
     @Mapping(target = "gender", source = "user.gender")
     @Mapping(target = "groups", source = "groups")
+    @Mapping(target = "userImage", source = "user.userImage")
     AuthResponse toAuthResponse(User user, String token, List<GroupInfoResponse> groups);
 }

@@ -89,6 +89,7 @@ public class AuthService implements IAuthService {
         user.setGender(request.getGender());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setVerified(false); // Ensure user is marked as unverified
+        user.setUserImage("https://res.cloudinary.com/diyxertpi/image/upload/v1766500889/default-avatar-avif_ujmbe7.avif");
 
         userRepository.save(user);
 
