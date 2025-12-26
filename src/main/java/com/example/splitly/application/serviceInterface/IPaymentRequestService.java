@@ -30,7 +30,7 @@ public interface IPaymentRequestService {
 
     public Set<PaymentResponse> getAllPaymentRequestByGroupId(Long groupId);
 
-    public UpdateStatusProcessPaymentResponse updateProcessStatusOfConsensus(Integer paymentId, UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest);
+//    public UpdateStatusProcessPaymentResponse updateProcessStatusOfConsensus(Integer paymentId, UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest);
 
     public UpdateStatusSuccessPaymentResponse updateSuccessStatusOfConsensus(Integer paymentId, UpdateStatusSuccessPaymentRequest updateStatusSuccessPaymentRequest);
 
@@ -38,11 +38,11 @@ public interface IPaymentRequestService {
 
     public PaymentResponse changeStatusPaymentRequestToFailed(Integer paymentId);
 
-    public PaymentResponse changeStatusPaymentRequestToProcessing(Integer paymentId);
+//    public PaymentResponse changeStatusPaymentRequestToProcessing(Integer paymentId);
 
     public PaymentResponse changeStatusPaymentRequestToSplit(Integer paymentId);
 
-    public PaymentResponse changeStatusPaymentRequestToAwaitingConfirmation(Integer paymentId, PaymentRequest paymentRequest);
+//    public PaymentResponse changeStatusPaymentRequestToAwaitingConfirmation(Integer paymentId, PaymentRequest paymentRequest);
 
     public Payment validatePaymentRequest(Integer paymentId, Set<PaymentRequestStatus> expectedStatus, @Nullable Object payload, @Nullable String payloadName);
 

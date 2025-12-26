@@ -41,4 +41,6 @@ public class PaymentResponse implements Serializable {
     private double usedFundAmount;
 
     private GroupInfoResponse groupInfoResponse;
+
+    private boolean isContainUser;
 }

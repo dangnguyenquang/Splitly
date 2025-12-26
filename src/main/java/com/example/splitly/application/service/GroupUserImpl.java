@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.example.splitly.application.facade.notification.NotificationFacade;
+import com.example.splitly.domain.repository.GroupInfoRepository;
 import com.example.splitly.domain.repository.UserConnectionRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -41,11 +43,14 @@ public class GroupUserImpl implements IGroupUser {
     private final UserMapper userMapper;
     private final GroupInfoMapper groupInfoMapper;
     private final UserConnectionRepository userConnectionRepository;
+    private final GroupInfoRepository groupInfoRepository;
+    private final NotificationFacade notificationFacade;
 
     @Override
     public void inviteUserToGroup(String email, Long groupId) {
         User currentUser = iUserService.getCurrentUser();
 
+        Optional<GroupInfo> groupInfo = groupInfoRepository.findById(groupId);
         Optional<User> optional = userRepository.findByEmail(email);
 
         if (optional.isEmpty()) {
@@ -102,6 +107,8 @@ public class GroupUserImpl implements IGroupUser {
             } else if (existing.getStatus() == InvitationStatus.SUCCESS) {
                 throw new EntityExistsException("User already exists in group!");
             } else {
+//                notificationFacade.notifyGroupInvite()
+
                 throw new EntityExistsException("Invitation has already been sent to " + maskEmail(email));
             }
         } else {
