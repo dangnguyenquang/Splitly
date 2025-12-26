@@ -1,5 +1,6 @@
 package com.example.splitly.application.service;
 
+import com.example.splitly.application.facade.notification.NotificationFacade;
 import com.example.splitly.application.mapper.ItemMapper;
 import com.example.splitly.application.mapper.PaymentImageMapper;
 import com.example.splitly.application.mapper.PaymentRequestMapper;
@@ -47,6 +48,7 @@ public class PaymentRequestService implements IPaymentRequestService {
     private final ImageCloudinaryService imageCloudinaryService;
     private final PaymentImageRepository paymentImageRepository;
     private final PaymentImageMapper paymentImageMapper;
+    private final NotificationFacade notificationFacade;
 
     @Override
     public PaymentResponse create(PaymentRequest paymentRequest, Long groupId) {
@@ -97,6 +99,8 @@ public class PaymentRequestService implements IPaymentRequestService {
         PaymentResponse paymentResponse = paymentRequestMapper.toPaymentResponse(savedPayment);
         paymentResponse.setItems(itemResponses);
         paymentResponse.setConsensusPayments(consensusPaymentResponses);
+
+        notificationFacade.notifyPaymentRequestCreated(savedPayment);
 
         return paymentResponse;
     }
@@ -195,6 +199,10 @@ public class PaymentRequestService implements IPaymentRequestService {
 
         UpdateStatusSuccessPaymentResponse updateStatusSuccessPaymentResponse = new UpdateStatusSuccessPaymentResponse();
 
+        if (updateStatusSuccessPaymentRequest.isSuccessAccepted()) {
+            notificationFacade.notifyConsensusAccepted(existingPayment, user);
+        }
+
         updateStatusSuccessPaymentResponse.setPaymentId(paymentId);
         updateStatusSuccessPaymentResponse.setUpdatedAt(saved.getUpdatedAt().toString());
         updateStatusSuccessPaymentResponse.setSuccessAccepted(saved.isSuccessAccepted());
@@ -232,6 +240,8 @@ public class PaymentRequestService implements IPaymentRequestService {
         paymentResponse.setItems(itemResponses);
         paymentResponse.setConsensusPayments(consensusPaymentResponses);
 
+        notificationFacade.notifyPaymentRequestUpdated(savedPayment);
+
         return paymentResponse;
     }
 
@@ -246,6 +256,9 @@ public class PaymentRequestService implements IPaymentRequestService {
         }
 
         existingPayment.setStatus(PaymentRequestStatus.FAILED);
+        Payment savedPayment = paymentRequestRepository.save(existingPayment);
+
+        notificationFacade.notifyPaymentFailed(savedPayment);
 
         return paymentRequestMapper.toPaymentResponse(paymentRequestRepository.save(existingPayment));
     }
@@ -344,6 +357,7 @@ public class PaymentRequestService implements IPaymentRequestService {
     }
 
     @Override
+    @Transactional
     public PaymentResponse changeStatusPaymentRequestToSplit(Integer paymentId) {
         Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
         Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
@@ -375,6 +389,7 @@ public class PaymentRequestService implements IPaymentRequestService {
 
         double eachShare = totalAmount / existingPayment.getConsensusPayments().size();
 
+        // Create debts and send notifications
         for (ConsensusPayment consensusPayment : existingPayment.getConsensusPayments()) {
             User debtor = consensusPayment.getUser();
             if (debtor.getUserId() == creator.getUserId()) {
@@ -391,18 +406,28 @@ public class PaymentRequestService implements IPaymentRequestService {
                     .payment(existingPayment)
                     .build();
 
-            userDebtRepository.save(userDebt);
+            UserDebt savedDebt = userDebtRepository.save(userDebt);
+
+            notificationFacade.notifyDebtCreated(savedDebt, existingPayment);
         }
 
-        paymentRequestRepository.save(existingPayment);
+        Payment savedPayment = paymentRequestRepository.save(existingPayment);
 
-        return paymentRequestMapper.toPaymentResponse(existingPayment);
+        notificationFacade.notifyPaymentReadyToSplit(savedPayment);
+
+        log.info("Payment request {} split successfully. Created {} debts",
+                paymentId, existingPayment.getConsensusPayments().size() - 1);
+
+        return paymentRequestMapper.toPaymentResponse(savedPayment);
     }
 
     @Override
     public void changeStatusPaymentRequestToSuccess(Integer paymentId) {
         Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.READY_TO_SPLIT);
         Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
+
+        Payment savedPayment = paymentRequestRepository.save(existingPayment);
+        notificationFacade.notifyPaymentSplitSuccess(savedPayment);
 
         existingPayment.setStatus(PaymentRequestStatus.SUCCESS);
     }
