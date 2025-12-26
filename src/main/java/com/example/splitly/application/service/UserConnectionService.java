@@ -1,5 +1,6 @@
 package com.example.splitly.application.service;
 
+import com.example.splitly.application.facade.notification.NotificationFacade;
 import com.example.splitly.application.mapper.UserConnectionMapper;
 import com.example.splitly.application.serviceInterface.IUserConnection;
 import com.example.splitly.domain.entity.User;
@@ -24,6 +25,7 @@ public class UserConnectionService implements IUserConnection {
     private final UserRepository userRepository;
     private final UserConnectionMapper mapper;
     private final UserService userService;
+    private final NotificationFacade notificationFacade;
 
     @Override
     @Transactional
@@ -52,6 +54,8 @@ public class UserConnectionService implements IUserConnection {
 
         log.info("User {} created connection request to user {}",
                 currentUser.getUserId(), dto.getReceiveUserId());
+
+        notificationFacade.notifyConnectionRequestReceived(currentUser, receiveUser);
 
         return mapper.toUserConnectionResponseDto(userConnectionRepository.save(connection), currentUser.getUserId());
     }
@@ -107,6 +111,9 @@ public class UserConnectionService implements IUserConnection {
     ) {
         User currentUser = userService.getCurrentUser();
 
+        User requestUser = userRepository.findById(requestUserId)
+                .orElseThrow(() -> new RuntimeException("Request user not found"));
+
         UserConnection connection = userConnectionRepository
                 .findConnectionBetweenUsers(requestUserId, currentUser.getUserId())
                 .orElseThrow(() -> new RuntimeException("Connection not found"));
@@ -116,6 +123,12 @@ public class UserConnectionService implements IUserConnection {
 
         log.info("User {} changed connection status to {} for request from user {}",
                 currentUser.getUserId(), status, requestUserId);
+
+        if (status) {
+            notificationFacade.notifyConnectionRequestAccepted(requestUser, currentUser);
+        } else {
+            notificationFacade.notifyConnectionRequestRejected(requestUser, currentUser);
+        }
 
         return mapper.toUserConnectionResponseDto(userConnectionRepository.save(connection), currentUser.getUserId());
     }

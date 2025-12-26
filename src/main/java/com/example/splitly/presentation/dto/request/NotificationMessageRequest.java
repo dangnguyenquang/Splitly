@@ -5,17 +5,27 @@ import java.util.Map;
 
 import com.example.splitly.domain.enumerator.NotificationType;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class NotificationMessageRequest {
 
-    private NotificationType notificationType;
-    private List<Integer> recipientUserIds;
-    private String title;
-    private String body;
-    private String notificationImage;
-    private Map<String, String> payload;
+    @NonNull
+    private final NotificationType notificationType;
+
+    @NonNull
+    private final List<Integer> recipientUserIds;
+
+    @NonNull
+    private final String title;
+
+    @NonNull
+    private final String body;
+
+    private final String notificationImage;
+
+    @Builder.Default
+    private final Map<String, String> payload = Map.of();
 }

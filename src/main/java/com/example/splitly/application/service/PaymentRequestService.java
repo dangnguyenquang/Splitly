@@ -103,7 +103,7 @@ public class PaymentRequestService implements IPaymentRequestService {
 
     @Override
     public PaymentResponse getById(Integer paymentId) {
-        return paymentAssembler.toPaymentResponse(paymentRequestRepository.getByPaymentId(paymentId));
+        return checkCurrentUser(paymentAssembler.toPaymentResponse(paymentRequestRepository.getByPaymentId(paymentId)));
     }
 
     @Override
@@ -133,45 +133,47 @@ public class PaymentRequestService implements IPaymentRequestService {
 
     @Override
     public Set<PaymentResponse> getAllPaymentRequestByGroupId(Long groupId) {
-        return paymentRequestRepository.getByGroupInfo_GroupId(groupId).stream().map(
-                paymentAssembler::toPaymentResponse
-        ).collect(Collectors.toSet());
+        return paymentRequestRepository.getByGroupInfo_GroupId(groupId)
+                .stream()
+                .map(paymentAssembler::toPaymentResponse)
+                .map(this::checkCurrentUser)
+                .collect(Collectors.toSet());
     }
 
-    @Override
-    public UpdateStatusProcessPaymentResponse updateProcessStatusOfConsensus(Integer paymentId, UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest) {
-        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
-        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
-
-        User user = userService.getCurrentUser();
-        ConsensusPaymentId id = new ConsensusPaymentId(paymentId, user.getUserId());
-
-        ConsensusPayment consensusPayment = consensusRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Consensus payment not found"));
-
-
-        if (consensusPayment.isProcessAccepted() == updateStatusProcessPaymentRequest.isProcessAccepted()) {
-            throw new IllegalArgumentException("Consensus payment process status have already " + consensusPayment.isProcessAccepted());
-        }
-
-        consensusPayment.setProcessAccepted(updateStatusProcessPaymentRequest.isProcessAccepted());
-
-        consensusPayment.setUpdatedAt(LocalDateTime.now());
-
-        ConsensusPayment saved = consensusRepository.save(consensusPayment);
-
-        UpdateStatusProcessPaymentResponse updateStatusProcessPaymentResponse = new UpdateStatusProcessPaymentResponse();
-
-        updateStatusProcessPaymentResponse.setPaymentId(paymentId);
-        updateStatusProcessPaymentResponse.setUpdatedAt(saved.getUpdatedAt().toString());
-        updateStatusProcessPaymentResponse.setProcessAccepted(saved.isProcessAccepted());
-
-        return updateStatusProcessPaymentResponse;
-    }
+//    @Override
+//    public UpdateStatusProcessPaymentResponse updateProcessStatusOfConsensus(Integer paymentId, UpdateStatusProcessPaymentRequest updateStatusProcessPaymentRequest) {
+//        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
+//        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
+//
+//        User user = userService.getCurrentUser();
+//        ConsensusPaymentId id = new ConsensusPaymentId(paymentId, user.getUserId());
+//
+//        ConsensusPayment consensusPayment = consensusRepository.findById(id)
+//                .orElseThrow(() -> new EntityNotFoundException("Consensus payment not found"));
+//
+//
+//        if (consensusPayment.isProcessAccepted() == updateStatusProcessPaymentRequest.isProcessAccepted()) {
+//            throw new IllegalArgumentException("Consensus payment process status have already " + consensusPayment.isProcessAccepted());
+//        }
+//
+//        consensusPayment.setProcessAccepted(updateStatusProcessPaymentRequest.isProcessAccepted());
+//
+//        consensusPayment.setUpdatedAt(LocalDateTime.now());
+//
+//        ConsensusPayment saved = consensusRepository.save(consensusPayment);
+//
+//        UpdateStatusProcessPaymentResponse updateStatusProcessPaymentResponse = new UpdateStatusProcessPaymentResponse();
+//
+//        updateStatusProcessPaymentResponse.setPaymentId(paymentId);
+//        updateStatusProcessPaymentResponse.setUpdatedAt(saved.getUpdatedAt().toString());
+//        updateStatusProcessPaymentResponse.setProcessAccepted(saved.isProcessAccepted());
+//
+//        return updateStatusProcessPaymentResponse;
+//    }
 
     @Override
     public UpdateStatusSuccessPaymentResponse updateSuccessStatusOfConsensus(Integer paymentId, UpdateStatusSuccessPaymentRequest updateStatusSuccessPaymentRequest) {
-        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.AWAITING_CONFIRMATION);
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
         Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
 
         User user = userService.getCurrentUser();
@@ -248,78 +250,78 @@ public class PaymentRequestService implements IPaymentRequestService {
         return paymentRequestMapper.toPaymentResponse(paymentRequestRepository.save(existingPayment));
     }
 
-    @Override
-    public PaymentResponse changeStatusPaymentRequestToProcessing(Integer paymentId) {
-        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
-        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
-
-        User user = userService.getCurrentUser();
-        if (user.getUserId() != existingPayment.getUser().getUserId()) {
-            throw new AccessDeniedException("You don't have access to this payment request");
-        }
-
-        Set<ConsensusPaymentResponse> consensusPaymentResponses = consensusService.getByPaymentId(paymentId);
-
-        consensusPaymentResponses.forEach(res -> {
-            if (!res.isProcessAccepted()) {
-                throw new IllegalArgumentException("Everyone didn't accept this payment yet");
-            }
-        });
-
-        existingPayment.setStatus(PaymentRequestStatus.PROCESSING);
-
-        return paymentRequestMapper.toPaymentResponse(paymentRequestRepository.save(existingPayment));
-    }
-
-    @Override
-    public PaymentResponse changeStatusPaymentRequestToAwaitingConfirmation(Integer paymentId, PaymentRequest paymentRequest) {
-        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.PROCESSING);
-        Payment existingPayment = validatePaymentRequest(
-                paymentId,
-                allowedStatuses,
-                paymentRequest,
-                "Payment request"
-        );
-
-        User user = userService.getCurrentUser();
-        if (user.getUserId() != existingPayment.getUser().getUserId()) {
-            throw new AccessDeniedException("You don't have access to this payment request");
-        }
-
-        if (paymentRequest.getItems() == null || paymentRequest.getItems().isEmpty()) {
-            throw new IllegalArgumentException("Payment request must contain at least one item.");
-        }
-
-        Set<Items> validatedItems = new HashSet<>();
-
-        for (ItemRequest itemRequest : paymentRequest.getItems()) {
-            if (itemRequest.getPriceQuotation() < 0) {
-                throw new IllegalArgumentException("Item '" + itemRequest.getItemName() + "' has invalid price quotation.");
-            }
-
-            if (itemRequest.getQuantity() < 1) {
-                throw new IllegalArgumentException("Item '" + itemRequest.getItemName() + "' has invalid quantity.");
-            }
-
-            double amount = itemRequest.getPriceQuotation() * itemRequest.getQuantity();
-
-            Items item = itemMapper.toItems(itemRequest);
-            item.setAmount(amount);
-            item.setPayment(existingPayment);
-
-            validatedItems.add(item);
-        }
-
-        existingPayment.setItems(validatedItems);
-
-        existingPayment.setStatus(PaymentRequestStatus.AWAITING_CONFIRMATION);
-
-        paymentRequestRepository.save(existingPayment);
-        Set<ItemResponse> itemResponses = itemService.updateItemsByPaymentId(existingPayment, paymentRequest.getItems());
-
-
-        return paymentRequestMapper.toPaymentResponse(existingPayment);
-    }
+//    @Override
+//    public PaymentResponse changeStatusPaymentRequestToProcessing(Integer paymentId) {
+//        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
+//        Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
+//
+//        User user = userService.getCurrentUser();
+//        if (user.getUserId() != existingPayment.getUser().getUserId()) {
+//            throw new AccessDeniedException("You don't have access to this payment request");
+//        }
+//
+//        Set<ConsensusPaymentResponse> consensusPaymentResponses = consensusService.getByPaymentId(paymentId);
+//
+//        consensusPaymentResponses.forEach(res -> {
+//            if (!res.isProcessAccepted()) {
+//                throw new IllegalArgumentException("Everyone didn't accept this payment yet");
+//            }
+//        });
+//
+//        existingPayment.setStatus(PaymentRequestStatus.PROCESSING);
+//
+//        return paymentRequestMapper.toPaymentResponse(paymentRequestRepository.save(existingPayment));
+//    }
+//
+//    @Override
+//    public PaymentResponse changeStatusPaymentRequestToAwaitingConfirmation(Integer paymentId, PaymentRequest paymentRequest) {
+//        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.PROCESSING);
+//        Payment existingPayment = validatePaymentRequest(
+//                paymentId,
+//                allowedStatuses,
+//                paymentRequest,
+//                "Payment request"
+//        );
+//
+//        User user = userService.getCurrentUser();
+//        if (user.getUserId() != existingPayment.getUser().getUserId()) {
+//            throw new AccessDeniedException("You don't have access to this payment request");
+//        }
+//
+//        if (paymentRequest.getItems() == null || paymentRequest.getItems().isEmpty()) {
+//            throw new IllegalArgumentException("Payment request must contain at least one item.");
+//        }
+//
+//        Set<Items> validatedItems = new HashSet<>();
+//
+//        for (ItemRequest itemRequest : paymentRequest.getItems()) {
+//            if (itemRequest.getPriceQuotation() < 0) {
+//                throw new IllegalArgumentException("Item '" + itemRequest.getItemName() + "' has invalid price quotation.");
+//            }
+//
+//            if (itemRequest.getQuantity() < 1) {
+//                throw new IllegalArgumentException("Item '" + itemRequest.getItemName() + "' has invalid quantity.");
+//            }
+//
+//            double amount = itemRequest.getPriceQuotation() * itemRequest.getQuantity();
+//
+//            Items item = itemMapper.toItems(itemRequest);
+//            item.setAmount(amount);
+//            item.setPayment(existingPayment);
+//
+//            validatedItems.add(item);
+//        }
+//
+//        existingPayment.setItems(validatedItems);
+//
+//        existingPayment.setStatus(PaymentRequestStatus.AWAITING_CONFIRMATION);
+//
+//        paymentRequestRepository.save(existingPayment);
+//        Set<ItemResponse> itemResponses = itemService.updateItemsByPaymentId(existingPayment, paymentRequest.getItems());
+//
+//
+//        return paymentRequestMapper.toPaymentResponse(existingPayment);
+//    }
 
     @Override
     public Payment validatePaymentRequest(Integer paymentId, Set<PaymentRequestStatus> expectedStatuses, Object payload, String payloadName) {
@@ -343,8 +345,12 @@ public class PaymentRequestService implements IPaymentRequestService {
 
     @Override
     public PaymentResponse changeStatusPaymentRequestToSplit(Integer paymentId) {
-        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.AWAITING_CONFIRMATION);
+        Set<PaymentRequestStatus> allowedStatuses = Set.of(PaymentRequestStatus.WAITING);
         Payment existingPayment = validatePaymentRequest(paymentId, allowedStatuses, null, null);
+
+        if (existingPayment.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Payment must have at least 1 item");
+        }
 
         User creator = userService.getCurrentUser();
         if (creator.getUserId() != existingPayment.getUser().getUserId()) {
@@ -473,5 +479,16 @@ public class PaymentRequestService implements IPaymentRequestService {
         }
 
         return responses;
+    }
+
+    public PaymentResponse checkCurrentUser(PaymentResponse paymentResponse) {
+        User currentUser = userService.getCurrentUser();
+
+        boolean isContainUser = paymentResponse.getConsensusPayments() != null
+                && paymentResponse.getConsensusPayments().stream()
+                .anyMatch(cp -> cp.getUserId() == currentUser.getUserId());
+
+        paymentResponse.setContainUser(isContainUser);
+        return paymentResponse;
     }
 }
