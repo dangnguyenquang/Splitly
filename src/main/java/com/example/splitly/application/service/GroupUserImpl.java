@@ -57,6 +57,10 @@ public class GroupUserImpl implements IGroupUser {
             throw new EntityNotFoundException("Not found user with " + maskEmail(email) + "!");
         }
 
+        if (groupInfo.isEmpty()) {
+            throw new EntityNotFoundException("Not found group with " + groupId + "!");
+        }
+
         User targetUser = optional.get();
 
         // Prevent inviting yourself
@@ -112,6 +116,8 @@ public class GroupUserImpl implements IGroupUser {
                 throw new EntityExistsException("Invitation has already been sent to " + maskEmail(email));
             }
         } else {
+            notificationFacade.notifyGroupInvite(groupInfo.get(), currentUser, targetUser);
+
             GroupUser groupUser = GroupUser.builder()
                     .groupUserId(groupUserId)
                     .status(InvitationStatus.WAITING)
