@@ -34,7 +34,7 @@ public class UserDebtService implements IUserDebt {
         User user = userService.getCurrentUser();
 
         List<UserDebt> userDebts = userDebtRepository.findByDebtorUserId(user.getUserId());
-        return userDebtMapper.toUserDebtResponse(userDebts);
+        return userDebtMapper.toResponses(userDebts);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class UserDebtService implements IUserDebt {
         User user = userService.getCurrentUser();
 
         List<UserDebt> userDebts = userDebtRepository.findByCreditorUserId(user.getUserId());
-        return userDebtMapper.toUserDebtResponse(userDebts);
+        return userDebtMapper.toResponses(userDebts);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class UserDebtService implements IUserDebt {
         User user = userService.getCurrentUser();
 
         List<UserDebt> userDebts = userDebtRepository.findAllDebtInGroup(groupId, user.getUserId());
-        return userDebtMapper.toUserDebtResponse(userDebts);
+        return userDebtMapper.toResponses(userDebts);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class UserDebtService implements IUserDebt {
             throw new IllegalStateException("You don't have access to this");
         }
 
-        return userDebtMapper.toUserDebtResponse(userDebts);
+        return userDebtMapper.toResponses(userDebts);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class UserDebtService implements IUserDebt {
                 paymentRequestService.changeStatusPaymentRequestToSuccess(userDebt.getPayment().getPaymentId());
             }
 
-            return userDebtMapper.toUserDebtResponse(savedDebt);
+            return userDebtMapper.toResponse(savedDebt);
         } catch (DataAccessException ex) {
             throw new RuntimeException("Failed to update debt clearance", ex);
         }
