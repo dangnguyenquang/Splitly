@@ -1,5 +1,19 @@
 package com.example.splitly.application.service;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.context.ApplicationContextException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.splitly.application.mapper.UserMapper;
 import com.example.splitly.application.serviceInterface.IImageCloudinaryService;
 import com.example.splitly.application.serviceInterface.IUserService;
@@ -13,22 +27,10 @@ import com.example.splitly.domain.repository.RoleRepository;
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.UserRequest;
 import com.example.splitly.presentation.dto.response.UserResponse;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContextException;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -69,9 +71,9 @@ public class UserService implements IUserService {
             Set<Integer> roleIds = request.getRoles().stream()
                     .map(Integer::valueOf)
                     .collect(Collectors.toSet());
-    
+
             List<Role> roles = roleRepository.findAllById(roleIds);
-    
+
             existingUser.setRoles(new HashSet<>(roles));
         }
         existingUser.setFullName(request.getFullName());
@@ -98,6 +100,12 @@ public class UserService implements IUserService {
         // code
 
         return userMapper.toUserResponse(user);
+    }
+
+    @Override
+    public UserResponse getUserByEmail(String email) {
+        return userMapper.toUserResponse(userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found in DB")));
     }
 
     @Override
@@ -158,7 +166,6 @@ public class UserService implements IUserService {
                 .toList();
     }
 
-
     public List<UserResponse> searchUsers(String keyword) {
         User currentUser = getCurrentUser();
 
@@ -173,8 +180,7 @@ public class UserService implements IUserService {
 
         List<User> users = userRepository.searchByEmailOrUsernameKeyword(
                 trimmedKeyword,
-                currentUser.getUserId()
-        );
+                currentUser.getUserId());
 
         log.info("Found {} users matching keyword: {}", users.size(), trimmedKeyword);
 
@@ -183,8 +189,8 @@ public class UserService implements IUserService {
                 .toList();
     }
 
-@Override
-        public String uploadUserAvatar(MultipartFile file, String folderName) {
+    @Override
+    public String uploadUserAvatar(MultipartFile file, String folderName) {
         User user = getCurrentUser();
         if (user == null)
             throw new AccessDeniedException("Not logged in.");
