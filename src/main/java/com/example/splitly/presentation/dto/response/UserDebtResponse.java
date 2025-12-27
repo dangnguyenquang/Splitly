@@ -11,13 +11,13 @@ import lombok.Setter;
 @Getter
 @Builder
 public class UserDebtResponse implements Serializable {
-    private UserResponse userInformation;
+
+    private UserResponse debtor;
+    private UserResponse creditor;
 
     private Double amount;
-
     private String note;
-
     private LocalDateTime createdAt;
-
     private Boolean status;
 }
+

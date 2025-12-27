@@ -11,9 +11,19 @@ import com.example.splitly.presentation.dto.response.UserDebtResponse;
 
 @Mapper(componentModel = "spring", uses = UserMapper.class)
 public interface UserDebtMapper {
-    List<UserDebtResponse> toUserDebtResponse(List<UserDebt> userDebts);
 
-    @Mapping(source = "creditor", target = "userInformation",
-            qualifiedBy = WithoutRoleMapping.class)
-    UserDebtResponse toUserDebtResponse(UserDebt userDebt);
+    @Mapping(
+            source = "debtor",
+            target = "debtor",
+            qualifiedBy = WithoutRoleMapping.class
+    )
+    @Mapping(
+            source = "creditor",
+            target = "creditor",
+            qualifiedBy = WithoutRoleMapping.class
+    )
+    UserDebtResponse toResponse(UserDebt userDebt);
+
+    List<UserDebtResponse> toResponses(List<UserDebt> userDebts);
 }
+
