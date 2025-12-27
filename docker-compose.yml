@@ -2,8 +2,8 @@
 
 services:
   postgres:
-    #image:postgres:latest
-    image: postgres:16
+    image: postgres:latest
+    # image: postgres:16
     container_name: splitly-postgres
     environment:
       POSTGRES_DB: splitly_db

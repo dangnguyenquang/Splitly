@@ -1,5 +1,23 @@
 package com.example.splitly.presentation.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.splitly.application.service.UserService;
 import com.example.splitly.application.serviceInterface.IUserConnection;
 import com.example.splitly.application.serviceInterface.IUserService;
@@ -8,16 +26,9 @@ import com.example.splitly.presentation.dto.request.UserRequest;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.presentation.dto.response.UserConnectionResponse;
 import com.example.splitly.presentation.dto.response.UserResponse;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -38,6 +49,12 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseData<?> getUserById(@PathVariable Integer userId) {
         UserResponse user = userService.getUserById(userId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get user successfully", user);
+    }
+
+    @GetMapping("/by-email")
+    public ResponseData<?> getUserByEmail(@RequestParam String email) {
+        UserResponse user = userService.getUserByEmail(email);
         return new ResponseData<>(HttpStatus.OK.value(), "Get user successfully", user);
     }
 
@@ -183,7 +200,7 @@ public class UserController {
     public ResponseEntity<ResponseData<?>> uploadAvatarUser(
             @PathVariable String folderName,
             @RequestParam("file") MultipartFile file) {
-        String url =userService.uploadUserAvatar(file, folderName);
+        String url = userService.uploadUserAvatar(file, folderName);
         ResponseData<?> responseData = new ResponseData<>(HttpStatus.OK.value(), "Upload successfully!", url);
         return ResponseEntity.ok(responseData);
     }

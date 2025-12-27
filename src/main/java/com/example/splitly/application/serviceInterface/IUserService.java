@@ -32,4 +32,5 @@ public interface IUserService {
     List<UserResponse> searchUsersByEmail(String keyword);
 
     public String uploadUserAvatar(MultipartFile file, String folderName);
+    public UserResponse getUserByEmail(String email);
 }
