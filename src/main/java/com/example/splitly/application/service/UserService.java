@@ -105,7 +105,7 @@ public class UserService implements IUserService {
     @Override
     public UserResponse getUserByEmail(String email) {
         return userMapper.toUserResponse(userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found in DB")));
+                .orElseThrow(() -> new EntityNotFoundException("User not found")));
     }
 
     @Override
