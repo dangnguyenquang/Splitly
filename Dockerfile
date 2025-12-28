@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:21-jdk-jammy
 ARG JAR_FILE=target/*.jar
 COPY target/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
