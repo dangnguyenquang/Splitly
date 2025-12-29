@@ -15,5 +15,13 @@ public interface IUserDebt {
 
     List<UserDebtResponse> getAllUserDebtByPaymentId(int paymentId);
 
-    UserDebtResponse handleDebtClearance(Integer userDebtId) throws AccessDeniedException;
+    void handleDebtClearance(Integer userDebtId) throws AccessDeniedException;
+
+    void sendPaymentReminder (Integer userDebtId, String message);
+
+    void sendVerificationReminder (Integer userDebtId, String message);
+
+    List<UserDebtResponse> getAllUserDebt(Boolean status);
+
+    List<UserDebtResponse> getAllDebtsToReceive(Boolean status);
 }

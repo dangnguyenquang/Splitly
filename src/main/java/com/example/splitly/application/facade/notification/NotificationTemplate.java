@@ -341,4 +341,90 @@ public final class NotificationTemplate {
                 ))
                 .build();
     }
+
+    /**
+     * Payment reminder: Creditor reminds debtor to pay debt
+     */
+    public static NotificationMessageRequest paymentReminder(
+            UserDebt debt,
+            String customMessage
+    ) {
+        String message = customMessage != null && !customMessage.trim().isEmpty()
+                ? customMessage
+                : "Please pay your debt when you have time";
+
+        String body = String.format(
+                "%s: \"%s\" (Debt: %.0f VND)",
+                debt.getCreditor().getFullName() != null
+                        ? debt.getCreditor().getFullName()
+                        : debt.getCreditor().getEmail(),
+                message,
+                debt.getAmount()
+        );
+
+        return NotificationMessageRequest.builder()
+                .title("Payment reminder")
+                .body(body)
+                .notificationType(NotificationType.PAYMENT_REMINDER)
+                .recipientUserIds(List.of(debt.getDebtor().getUserId()))
+                .payload(Map.of(
+                        "debtId", debt.getUserDebtId().toString(),
+                        "amount", String.valueOf(debt.getAmount()),
+                        "creditorName", debt.getCreditor().getFullName() != null
+                                ? debt.getCreditor().getFullName()
+                                : debt.getCreditor().getEmail(),
+                        "message", message,
+                        "paymentId", debt.getPayment() != null
+                                ? debt.getPayment().getPaymentId().toString()
+                                : "",
+                        "groupId", debt.getGroupInfo() != null
+                                ? debt.getGroupInfo().getGroupId().toString()
+                                : "",
+                        "action", "view_debt_details"
+                ))
+                .build();
+    }
+
+    /**
+     * Verification reminder: Debtor reminds creditor to verify payment
+     */
+    public static NotificationMessageRequest verificationReminder(
+            UserDebt debt,
+            String customMessage
+    ) {
+        String message = customMessage != null && !customMessage.trim().isEmpty()
+                ? customMessage
+                : "I have paid the debt. Please verify";
+
+        String body = String.format(
+                "%s: \"%s\" (Debt: %.0f VND)",
+                debt.getDebtor().getFullName() != null
+                        ? debt.getDebtor().getFullName()
+                        : debt.getDebtor().getEmail(),
+                message,
+                debt.getAmount()
+        );
+
+        return NotificationMessageRequest.builder()
+                .title("Payment verification needed")
+                .body(body)
+                .notificationType(NotificationType.VERIFICATION_REMINDER)
+                .recipientUserIds(List.of(debt.getCreditor().getUserId()))
+                .payload(Map.of(
+                        "debtId", debt.getUserDebtId().toString(),
+                        "amount", String.valueOf(debt.getAmount()),
+                        "debtorName", debt.getDebtor().getFullName() != null
+                                ? debt.getDebtor().getFullName()
+                                : debt.getDebtor().getEmail(),
+                        "message", message,
+                        "paymentId", debt.getPayment() != null
+                                ? debt.getPayment().getPaymentId().toString()
+                                : "",
+                        "groupId", debt.getGroupInfo() != null
+                                ? debt.getGroupInfo().getGroupId().toString()
+                                : "",
+                        "action", "verify_payment"
+                ))
+                .build();
+    }
 }
