@@ -120,7 +120,7 @@ public class GroupUserImpl implements IGroupUser {
 
             GroupUser groupUser = GroupUser.builder()
                     .groupUserId(groupUserId)
-                    .status(InvitationStatus.WAITING)
+                    .status(InvitationStatus.SUCCESS)
                     .joinedAt(LocalDateTime.now())
                     .build();
             groupUserRepository.save(groupUser);
@@ -170,7 +170,7 @@ public class GroupUserImpl implements IGroupUser {
     @Override
     public List<GroupInfoResponse> getGroupsByUserId() {
         User user = iUserService.getCurrentUser();
-        List<GroupInfo> groups = groupUserRepository.findAllGroupsByUserId(user.getUserId());
+        List<GroupInfo> groups = groupUserRepository.findAllGroupsByUserIdAndStatus(user.getUserId(), InvitationStatus.SUCCESS);
         return groupInfoMapper.toGroupInfoResponses(groups);
     }
 
