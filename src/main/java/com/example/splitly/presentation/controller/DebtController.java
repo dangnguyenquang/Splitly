@@ -1,8 +1,10 @@
 package com.example.splitly.presentation.controller;
 
 import com.example.splitly.application.serviceInterface.IUserDebt;
+import com.example.splitly.presentation.dto.request.DebtReminderRequest;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.presentation.dto.response.UserDebtResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -19,14 +21,18 @@ public class DebtController {
     private final IUserDebt userDebt;
 
     @GetMapping("/pay")
-    public ResponseData<?> getAllDebtsToPayByUserId() {
-        List<UserDebtResponse> response = userDebt.getAllUserDebt();
+    public ResponseData<?> getAllDebtsToPayByUserId(
+            @RequestParam(required = false) Boolean status
+    ) {
+        List<UserDebtResponse> response = userDebt.getAllUserDebt(status);
         return new ResponseData<>(HttpStatus.OK.value(), "Get all user debt to pay successfully", response);
     }
 
     @GetMapping("/receive")
-    public ResponseData<?> getAllDebtsToReceiveByUserId() {
-        List<UserDebtResponse> response = userDebt.getAllDebtsToReceive();
+    public ResponseData<?> getAllDebtsToReceiveByUserId(
+            @RequestParam(required = false) Boolean status
+    ) {
+        List<UserDebtResponse> response = userDebt.getAllDebtsToReceive(status);
         return new ResponseData<>(HttpStatus.OK.value(), "Get all user debt to receive successfully", response);
     }
 
@@ -38,8 +44,41 @@ public class DebtController {
 
     @PatchMapping("/{id}/confirm")
     public ResponseData<?> confirmDebt(@PathVariable Integer id) throws AccessDeniedException {
-        UserDebtResponse response = userDebt.handleDebtClearance(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "Debt confirmed successfully", response);
+        userDebt.handleDebtClearance(id);
+        return new ResponseData<>(HttpStatus.OK.value(), "Debt confirmed successfully");
+    }
 
+    /**
+     * Send payment reminder from creditor to debtor
+     * Rate limit: Once every 12 hours
+     * <p>
+     * POST /debts/remind-payment
+     */
+    @PostMapping("/remind-payment")
+    public ResponseData<?> sendPaymentReminder(@Valid @RequestBody DebtReminderRequest request) {
+        userDebt.sendPaymentReminder(request.getUserDebtId(), request.getMessage());
+
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Payment reminder sent successfully",
+                null
+        );
+    }
+
+    /**
+     * Send verification reminder from debtor to creditor
+     * Rate limit: Once every 12 hours
+     * <p>
+     * POST /debts/remind-verification
+     */
+    @PostMapping("/remind-verification")
+    public ResponseData<?> sendVerificationReminder(@Valid @RequestBody DebtReminderRequest request) {
+        userDebt.sendVerificationReminder(request.getUserDebtId(), request.getMessage());
+
+        return new ResponseData<>(
+                HttpStatus.OK.value(),
+                "Verification reminder sent successfully",
+                null
+        );
     }
 }

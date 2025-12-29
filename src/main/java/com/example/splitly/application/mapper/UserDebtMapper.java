@@ -9,7 +9,11 @@ import org.mapstruct.Mapping;
 import com.example.splitly.domain.entity.UserDebt;
 import com.example.splitly.presentation.dto.response.UserDebtResponse;
 
-@Mapper(componentModel = "spring", uses = UserMapper.class)
+@Mapper(
+        componentModel = "spring",
+        uses = UserMapper.class,
+        builder = @org.mapstruct.Builder(disableBuilder = true)
+)
 public interface UserDebtMapper {
 
     @Mapping(

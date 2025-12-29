@@ -19,7 +19,9 @@ public enum NotificationType {
     PAYMENT_READY_TO_SPLIT("payment_ready_to_split"),
     PAYMENT_SPLIT_SUCCESS("payment_split_success"),
     PAYMENT_FAILED("payment_failed"),
-    PAYMENT_DEBT_CREATED("payment_debt_created");
+    PAYMENT_DEBT_CREATED("payment_debt_created"),
+    PAYMENT_REMINDER("payment_reminder"),
+    VERIFICATION_REMINDER("verification_reminder");
 
     private final String value;
 

@@ -387,7 +387,7 @@ public class PaymentRequestService implements IPaymentRequestService {
 
         existingPayment.setAmount(totalAmount);
 
-        double eachShare = totalAmount / existingPayment.getConsensusPayments().size();
+        double eachShare = totalAmount / (existingPayment.getConsensusPayments().size() + 1);
 
         // Create debts and send notifications
         for (ConsensusPayment consensusPayment : existingPayment.getConsensusPayments()) {
@@ -404,6 +404,7 @@ public class PaymentRequestService implements IPaymentRequestService {
                     .debtor(debtor)
                     .creditor(creator)
                     .payment(existingPayment)
+                    .groupInfo(existingPayment.getGroupInfo())
                     .build();
 
             UserDebt savedDebt = userDebtRepository.save(userDebt);
@@ -510,8 +511,8 @@ public class PaymentRequestService implements IPaymentRequestService {
         User currentUser = userService.getCurrentUser();
 
         boolean isContainUser = paymentResponse.getConsensusPayments() != null
-                && paymentResponse.getConsensusPayments().stream()
-                .anyMatch(cp -> cp.getUserId() == currentUser.getUserId());
+                && (paymentResponse.getConsensusPayments().stream()
+                .anyMatch(cp -> cp.getUserId() == currentUser.getUserId()) || paymentResponse.getUser().getUserId() == currentUser.getUserId());
 
         paymentResponse.setContainUser(isContainUser);
         return paymentResponse;

@@ -201,4 +201,40 @@ public class NotificationFacade {
             log.error("Failed to send connection rejected notification: {}", e.getMessage(), e);
         }
     }
+
+    /**
+     * Send payment reminder from creditor to debtor
+     */
+    public void notifyPaymentReminder(UserDebt debt, String customMessage) {
+        try {
+            NotificationMessageRequest req = NotificationTemplate.paymentReminder(debt, customMessage);
+            notificationService.sendNotification(req);
+
+            log.info("Sent payment reminder for debt {} from creditor {} to debtor {}",
+                    debt.getUserDebtId(),
+                    debt.getCreditor().getUserId(),
+                    debt.getDebtor().getUserId());
+        } catch (Exception e) {
+            log.error("Failed to send payment reminder notification: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to send payment reminder: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Send verification reminder from debtor to creditor
+     */
+    public void notifyVerificationReminder(UserDebt debt, String customMessage) {
+        try {
+            NotificationMessageRequest req = NotificationTemplate.verificationReminder(debt, customMessage);
+            notificationService.sendNotification(req);
+
+            log.info("Sent verification reminder for debt {} from debtor {} to creditor {}",
+                    debt.getUserDebtId(),
+                    debt.getDebtor().getUserId(),
+                    debt.getCreditor().getUserId());
+        } catch (Exception e) {
+            log.error("Failed to send verification reminder notification: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to send verification reminder: " + e.getMessage());
+        }
+    }
 }

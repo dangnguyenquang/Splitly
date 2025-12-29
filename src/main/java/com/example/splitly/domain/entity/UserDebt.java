@@ -38,6 +38,12 @@ public class UserDebt {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "payment_remind_at")
+    private LocalDateTime paymentReminderAt;
+
+    @Column(name = "payment_verification_reminder_at")
+    private LocalDateTime paymentVerificationReminderAt;
+
     @Column(name = "status")
     private Boolean status;
 

@@ -43,4 +43,8 @@ public interface UserDebtRepository extends JpaRepository<UserDebt, Long> {
     boolean existsByGroupInfo_GroupIdAndStatusAndCreditor_UserIdOrGroupInfo_GroupIdAndStatusAndDebtor_UserId(
             Long groupId1, Boolean status1, Integer creditorId,
             Long groupId2, Boolean status2, Integer debtorId);
+
+    List<UserDebt> findByDebtorUserIdAndStatus(Long userId, Boolean status);
+
+    List<UserDebt> findByCreditorUserIdAndStatus(Long userId, Boolean status);
 }
