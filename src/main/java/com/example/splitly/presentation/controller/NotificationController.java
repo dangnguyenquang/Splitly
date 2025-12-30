@@ -31,9 +31,9 @@ public class NotificationController {
     return ResponseEntity.ok(new ResponseData<>(HttpStatus.OK.value(), "test device token succesfully"));
   }
 
-  @GetMapping("/{userId}")
-  public ResponseEntity<ResponseData<?>> getAllNotificationsByUserId(@PathVariable Integer userId) {
+  @GetMapping
+  public ResponseEntity<ResponseData<?>> getAllNotificationsByUserId() {
     return ResponseEntity.ok(new ResponseData<>(HttpStatus.OK.value(), "Get notifications succesfully",
-        notificationService.getAllNotifications(userId)));
+        notificationService.getAllNotifications()));
   }
 }

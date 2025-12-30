@@ -174,11 +174,8 @@ public class NotificationService implements INotificationService {
         return out;
     }
 
-    public List<UserNotificationResponse> getAllNotifications(Integer userId) {
-        if (userId != null) {
-            return recipientRepo.findAllByRecipientUserId(userId);
-        } else
-            throw new IllegalArgumentException("User not found!");
-    }
-
+    public List<UserNotificationResponse> getAllNotifications() {
+        Integer userId = iUserService.getCurrentUser().getUserId();
+        return recipientRepo.findAllByRecipientUserId(userId);
+}
 }

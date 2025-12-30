@@ -7,5 +7,5 @@ import com.example.splitly.presentation.dto.response.UserNotificationResponse;
 
 public interface INotificationService {
     public void sendNotification(NotificationMessageRequest notificationMessageRequest);
-    public List<UserNotificationResponse> getAllNotifications(Integer userId);
+    public List<UserNotificationResponse> getAllNotifications();
 }
