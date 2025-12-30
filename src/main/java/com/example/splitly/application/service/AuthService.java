@@ -6,6 +6,7 @@ import com.example.splitly.application.serviceInterface.IAuthService;
 import com.example.splitly.application.serviceInterface.IUserService;
 import com.example.splitly.domain.entity.GroupInfo;
 import com.example.splitly.domain.entity.User;
+import com.example.splitly.domain.enumerator.InvitationStatus;
 import com.example.splitly.domain.repository.GroupUserRepository;
 import com.example.splitly.domain.repository.UserRepository;
 import com.example.splitly.presentation.dto.request.NewPasswordRequest;
@@ -62,7 +63,7 @@ public class AuthService implements IAuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        List<GroupInfo> groupInfos = groupUserRepository.findAllGroupsByUserId(user.getUserId());
+        List<GroupInfo> groupInfos = groupUserRepository.findAllGroupsByUserIdAndStatus(user.getUserId(), InvitationStatus.SUCCESS);
 
         List<GroupInfoResponse> groups = groupInfoMapper.toGroupInfoResponses(groupInfos);
 
@@ -171,7 +172,7 @@ public class AuthService implements IAuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        List<GroupInfo> groupInfos = groupUserRepository.findAllGroupsByUserId(user.getUserId());
+        List<GroupInfo> groupInfos = groupUserRepository.findAllGroupsByUserIdAndStatus(user.getUserId(), InvitationStatus.SUCCESS);
         List<GroupInfoResponse> groups = groupInfoMapper.toGroupInfoResponses(groupInfos);
 
         return authMapper.toAuthResponse(user, jwt, groups);

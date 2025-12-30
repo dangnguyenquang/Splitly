@@ -15,14 +15,21 @@ import com.example.splitly.domain.entity.User;
 import com.example.splitly.domain.enumerator.InvitationStatus;
 
 
-
 @Repository
 public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserId> {
     @Query("SELECT gu.user FROM GroupUser gu WHERE gu.groupInfo.groupId = :groupId and gu.status = SUCCESS")
     List<User> findUsersByGroupId(@Param("groupId") Long groupId);
 
-    @Query("Select gu.groupInfo from GroupUser gu Where gu.user.userId = :userId")
-    List<GroupInfo> findAllGroupsByUserId(@Param("userId") Integer userId);
+    @Query("""
+                SELECT gu.groupInfo
+                FROM GroupUser gu
+                WHERE gu.user.userId = :userId
+                  AND gu.status = :status
+            """)
+    List<GroupInfo> findAllGroupsByUserIdAndStatus(
+            @Param("userId") Integer userId,
+            @Param("status") InvitationStatus status
+    );
 
     @Modifying
     @Query("delete from GroupUser gu where gu.groupInfo.groupId = :groupId")
@@ -34,6 +41,6 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, GroupUserI
             "AND gu.status = 'SUCCESS'")
     List<Integer> findExistingSuccessfulUsersInGroup(@Param("groupId") Long groupId,
                                                      @Param("userIds") List<Integer> userIds);
-                                                 
+
     boolean existsByGroupUserId_GroupIdAndUser_EmailIgnoreCaseAndStatus(Long groupId, String email, InvitationStatus status);
 }
