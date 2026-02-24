@@ -2,24 +2,34 @@
 
 services:
   postgres:
-    image: postgres:latest
-    # image: postgres:16
+    image: postgres:16
     container_name: splitly-postgres
-    environment:
-      POSTGRES_DB: splitly_db
-      POSTGRES_USER: splitly
-      POSTGRES_PASSWORD: password
+    env_file:
+      - .env
     ports:
-      # - "5432:5432"
-      - "5433:5432"
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db-init:/docker-entrypoint-initdb.d
     networks:
       - splitly-network
 
+  backend:
+    build: .
+    container_name: splitly-backend
+    ports:
+      - "7005:8080"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - splitly-network
+
 volumes:
   postgres_data:
+  postgres_data_test:
+
 
 networks:
   splitly-network:
