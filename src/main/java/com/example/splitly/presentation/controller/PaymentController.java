@@ -1,5 +1,6 @@
 package com.example.splitly.presentation.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.example.splitly.application.serviceInterface.IPaymentRequestService;
 import com.example.splitly.domain.enumerator.PaymentImageType;
 import com.example.splitly.presentation.dto.request.PaymentRequest;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping("/payment-request")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Payment Requests", description = "Endpoints for creating and managing payment requests and bills")
 public class PaymentController {
     private final IPaymentRequestService paymentRequestService;
 

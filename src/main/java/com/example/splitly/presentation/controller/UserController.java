@@ -1,5 +1,6 @@
 package com.example.splitly.presentation.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "User Management", description = "Endpoints for user profiles and connections")
 public class UserController {
 
     private final IUserService userService;

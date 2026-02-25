@@ -1,5 +1,6 @@
 package com.example.splitly.presentation.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.example.splitly.application.service.BillOcrService;
 import com.example.splitly.presentation.dto.request.BillOcrRequest;
 import com.example.splitly.presentation.dto.response.BillOcrResponse;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/bills")
 @RequiredArgsConstructor
+@Tag(name = "Bill OCR", description = "Endpoints for processing bill images using OCR")
 public class BillOcrController {
 
     private final BillOcrService billOcrService;
