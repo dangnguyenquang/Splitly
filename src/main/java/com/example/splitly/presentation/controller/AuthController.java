@@ -11,6 +11,7 @@ import com.example.splitly.presentation.dto.request.VerifyRequest;
 import com.example.splitly.presentation.dto.response.AuthResponse;
 import com.example.splitly.presentation.dto.response.ResponseData;
 import com.example.splitly.security.JwtUtil;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +36,7 @@ import java.util.Map;
 @RequestMapping("/auth")
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Endpoints for user login, registration, and password management")
 public class AuthController {
     private final IAuthService authService;
 

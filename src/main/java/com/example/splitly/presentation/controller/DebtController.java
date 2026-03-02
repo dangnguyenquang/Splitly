@@ -1,5 +1,6 @@
 package com.example.splitly.presentation.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.example.splitly.application.serviceInterface.IUserDebt;
 import com.example.splitly.presentation.dto.request.DebtReminderRequest;
 import com.example.splitly.presentation.dto.response.ResponseData;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequestMapping("/debt")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Debt Management", description = "Endpoints for tracking and managing debts between users")
 public class DebtController {
     private final IUserDebt userDebt;
 
